@@ -17,6 +17,8 @@ from environments import Road
 from plotters import PostPlotter, Plotter
 from storages import Storage
 
+from IPython.display import clear_output
+
 class TestCar():
   def __init__(self, road, plotter, storage):
     self.plot_frequency = 9
@@ -340,4 +342,7 @@ class TestCar():
       print('# \t\t\t _summary_action_were_taken         = ', _summary_action_was_taken)
       print('# ')
       print('# A run ciklus vége ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+
+    if ( i % 10 == 0 ):
+      clear_output(wait=True)
       
