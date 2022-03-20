@@ -75,7 +75,7 @@ class TestCar():
     # logger helyett
     global printer
     printer = Printer()
-    printer._ac = False
+    self.printer._ac = False
 
 
   def calculate_distances(self):
@@ -88,10 +88,10 @@ class TestCar():
       # v.24 - new
       if( self.sensor_center_enable == True ):
         if(int(self.road.wall_left[k]) < self.y):
-          printer.sr('Sensor center = ', self.distance_center_from_wall)
+          self.printer.sr('Sensor center = ', self.distance_center_from_wall)
           break
         if(int(self.road.wall_right[k]) > self.y):
-          printer.sr('Sensor center = ', self.distance_center_from_wall)
+          self.printer.sr('Sensor center = ', self.distance_center_from_wall)
           break
 
     k = self.x; d = 0
@@ -99,7 +99,7 @@ class TestCar():
       k += 1;  d += 1
       self.distance_left_from_wall = d
       if(int(self.road.wall_left[k]) < self.y + d):
-        printer.sr('Sensor from left wall = ', self.distance_left_from_wall)
+        self.printer.sr('Sensor from left wall = ', self.distance_left_from_wall)
         break
 
     k = self.x; d = 0
@@ -107,13 +107,13 @@ class TestCar():
       k += 1; d += 1
       self.distance_right_from_wall = d
       if(int(self.road.wall_right[k]) > self.y - d):
-        printer.sr('Sensor from right wall = ', self.distance_right_from_wall)
+        self.printer.sr('Sensor from right wall = ', self.distance_right_from_wall)
         break
 
     self.distance_from_top     = abs(self.road.wall_left[self.x] - self.y)
     self.distance_from_bottom  = abs(self.road.wall_right[self.x] - self.y)
-    printer.sr('most távolsagra van a felső faltól = ', self.distance_from_top)
-    printer.sr('most távolsagra van az alsó faltól = ', self.distance_from_bottom)
+    self.printer.sr('most távolsagra van a felső faltól = ', self.distance_from_top)
+    self.printer.sr('most távolsagra van az alsó faltól = ', self.distance_from_bottom)
 
 
 
@@ -195,8 +195,8 @@ class TestCar():
 
 
     for i in range(0, run_length, 1):
-      printer.util('# A run ciklus eleje --------------------------------------------------------------------------------------------------------------------')
-      printer.util('# i = ', i)
+      self.printer.util('# A run ciklus eleje --------------------------------------------------------------------------------------------------------------------')
+      self.printer.util('# i = ', i)
       _summary_mlp_prediction_was_taken = 0
       _summary_mlp_fit_was_taken = 0
       _summary_mesterseges_mozgatas = 0
@@ -236,8 +236,8 @@ class TestCar():
 
           if( len(self.before) > 9 ):
 
-            printer.info('------------------------------ IF len(self.before) > 9 ------------------------------')
-            printer.info('\n')
+            self.printer.info('------------------------------ IF len(self.before) > 9 ------------------------------')
+            self.printer.info('\n')
 
 
             # most ki kell számolni, hogy mennyi lenne a szenzorok értéke, ha fel le lépkednénk
@@ -245,9 +245,9 @@ class TestCar():
             move = np.array([-7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7])
 
 
-            printer.action('\t # Az egyes lépések várható kimeneteinek kiszámolása ----------------------------------------------')
+            self.printer.action('\t # Az egyes lépések várható kimeneteinek kiszámolása ----------------------------------------------')
 
-            printer.action('\t\t # Ennyivel mozdulna el egy szenzor adat 1 egység változással ha 1 lenne a before értéke')
+            self.printer.action('\t\t # Ennyivel mozdulna el egy szenzor adat 1 egység változással ha 1 lenne a before értéke')
 
             
             action = 0; tmp = 999999990
@@ -285,16 +285,16 @@ class TestCar():
               if( abs(0 - predicted_position) < tmp):       # rossz - javítva - tesztelés alatt
                 action = j
                 tmp = abs(0 - predicted_position)
-                printer.action('\t\t ---------------------')
-                printer.action('\t\t  action = ', action)
-                printer.action('\t\t  predicted_position = ', predicted_position)
-                printer.action('\t\t  absolute distance from 0 (tmp) = ', tmp)
-                printer.action('\t\t ---------------------')
+                self.printer.action('\t\t ---------------------')
+                self.printer.action('\t\t  action = ', action)
+                self.printer.action('\t\t  predicted_position = ', predicted_position)
+                self.printer.action('\t\t  absolute distance from 0 (tmp) = ', tmp)
+                self.printer.action('\t\t ---------------------')
 
-              printer.action('\t\t adott j-re {0} kiszámoltuk az előrejelzést de még nem hoztunk döntést -----------------------------------------------------------------'.format(j))
-              printer.action('\t\t --------------------------------------------------------------------------------------------------------------------------------------')
+              self.printer.action('\t\t adott j-re {0} kiszámoltuk az előrejelzést de még nem hoztunk döntést -----------------------------------------------------------------'.format(j))
+              self.printer.action('\t\t --------------------------------------------------------------------------------------------------------------------------------------')
             
-            printer.action('\t minden j-re kiszámoltuk az előrejelzést de még nem hoztunk döntést -------------------------------------------------\n')
+            self.printer.action('\t minden j-re kiszámoltuk az előrejelzést de még nem hoztunk döntést -------------------------------------------------\n')
 
 
 # a döntés azonban csak akkor fut le ha az alábbi feltétel teljesül, de igazából korábban már be van ágyazva ugyan ebbe a feltételbe
@@ -469,8 +469,9 @@ class Car():
     self.mesterseges_coutner = 0
 
 # logger helyett
-    global printer
-    printer = Printer()
+    self.printer = printer
+    # global printer
+    # printer = Printer()
 
 
   def calculate_distances(self):
@@ -481,10 +482,10 @@ class Car():
 #      k += 1; d += 1
 #      self.distance_center_from_wall = d
 #      if(int(self.road.wall_left[k]) < self.y):
-#        printer.sr('Sensor center = ', self.distance_center_from_wall)
+#        self.printer.sr('Sensor center = ', self.distance_center_from_wall)
 #        break
 #      if(int(self.road.wall_right[k]) > self.y):
-#        printer.sr('Sensor center = ', self.distance_center_from_wall)
+#        self.printer.sr('Sensor center = ', self.distance_center_from_wall)
 #        break
 
     k = self.x; d = 0
@@ -494,10 +495,10 @@ class Car():
       # v.24 - new
       if( self.sensor_center_enable == True ):
         if(int(self.road.wall_left[k]) < self.y):
-          printer.sr('Sensor center = ', self.distance_center_from_wall)
+          self.printer.sr('Sensor center = ', self.distance_center_from_wall)
           break
         if(int(self.road.wall_right[k]) > self.y):
-          printer.sr('Sensor center = ', self.distance_center_from_wall)
+          self.printer.sr('Sensor center = ', self.distance_center_from_wall)
           break
 
 #    k = self.x; d = 0
@@ -505,7 +506,7 @@ class Car():
 #      k += 1;  d += 1
 #      self.distance_left_from_wall = d
 #      if(int(self.road.wall_left[k]) < self.y + d):
-#        printer.sr('Sensor from left wall = ', self.distance_left_from_wall)
+#        self.printer.sr('Sensor from left wall = ', self.distance_left_from_wall)
 #        break
 
 # Ehelyett most az van hogy nézzen simán oldalra
@@ -517,7 +518,7 @@ class Car():
  #     k += 1; d += 1
  #     self.distance_right_from_wall = d
  #     if(int(self.road.wall_right[k]) > self.y - d):
- #       printer.sr('Sensor from right wall = ', self.distance_right_from_wall)
+ #       self.printer.sr('Sensor from right wall = ', self.distance_right_from_wall)
  #       break
 
 # Ehelyett most az van hogy nézzen simán oldalra
@@ -535,38 +536,38 @@ class Car():
 
     self.distance_from_top     = abs(self.road.wall_left[self.x] - self.y)
     self.distance_from_bottom  = abs(self.road.wall_right[self.x] - self.y)
-    printer.sr('most távolsagra van a felső faltól = ', self.distance_from_top)
-    printer.sr('most távolsagra van az alsó faltól = ', self.distance_from_bottom)
+    self.printer.sr('most távolsagra van a felső faltól = ', self.distance_from_top)
+    self.printer.sr('most távolsagra van az alsó faltól = ', self.distance_from_bottom)
 
 
-    printer.info('cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc')
-    printer.info('self.x                       = ', self.x)
-    printer.info('cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc')
+    self.printer.info('cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc')
+    self.printer.info('self.x                       = ', self.x)
+    self.printer.info('cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc')
 
     # ezt az értéket fogom becsülni, a középértéktől való eltérés mértéke, ha pozitív akkor fölfelé, ha negatív akkor lefelé tér el
     self.vertical_distance_from_middle = self.y - self.road.wall_center[self.x]
 
-    printer.info('KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK')
-    printer.info('self.vertical_distance_from_middle = ', self.vertical_distance_from_middle)
-    printer.info('KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK')
+    self.printer.info('KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK')
+    self.printer.info('self.vertical_distance_from_middle = ', self.vertical_distance_from_middle)
+    self.printer.info('KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK')
 
 
 
 
-    printer.info('ezt fogjuk becsülni, ez a középértéktől való eltérés mértéke = ', self.vertical_distance_from_middle)
+    self.printer.info('ezt fogjuk becsülni, ez a középértéktől való eltérés mértéke = ', self.vertical_distance_from_middle)
 
 
     # de elötte szeretnék még valamit leellenőrizni
     # ezeknek a hossza nem fog megeggyezni a tényleges futások számával, hanem több lesz
     # (milyen jó lett volna erre egy teszt esetet írni és akkor test driven development lenne)
 
-    printer.debug('\t\t\t ---------------- Teszt ----------------')
-    printer.debug('\t\t\t len(self.y_distance)    = ', len(self.y_distance))
-    printer.debug('\t\t\t len(self.sensor_left)   = ', len(self.sensor_left))
-    printer.debug('\t\t\t len(self.sensor_center) = ', len(self.sensor_center))
-    printer.debug('\t\t\t len(self.sensor_right)  = ', len(self.sensor_right))
-    printer.debug('\t\t\t self.x                  = ', self.x)
-    printer.debug('\t\t\t -------------- Teszt End --------------')
+    self.printer.debug('\t\t\t ---------------- Teszt ----------------')
+    self.printer.debug('\t\t\t len(self.y_distance)    = ', len(self.y_distance))
+    self.printer.debug('\t\t\t len(self.sensor_left)   = ', len(self.sensor_left))
+    self.printer.debug('\t\t\t len(self.sensor_center) = ', len(self.sensor_center))
+    self.printer.debug('\t\t\t len(self.sensor_right)  = ', len(self.sensor_right))
+    self.printer.debug('\t\t\t self.x                  = ', self.x)
+    self.printer.debug('\t\t\t -------------- Teszt End --------------')
 
 
   def append(self):
@@ -576,13 +577,13 @@ class Car():
     self.sensor_center.append(self.distance_center_from_wall)
     self.sensor_right.append(self.distance_right_from_wall)
 
-    printer.debug('\t\t\t ---------------- Append ----------------')
-    printer.debug('\t\t\t len(self.y_distance)    = ', len(self.y_distance))
-    printer.debug('\t\t\t len(self.sensor_left)   = ', len(self.sensor_left))
-    printer.debug('\t\t\t len(self.sensor_center) = ', len(self.sensor_center))
-    printer.debug('\t\t\t len(self.sensor_right)  = ', len(self.sensor_right))
-    printer.debug('\t\t\t self.x                  = ', self.x)
-    printer.debug('\t\t\t -------------- Append End --------------')
+    self.printer.debug('\t\t\t ---------------- Append ----------------')
+    self.printer.debug('\t\t\t len(self.y_distance)    = ', len(self.y_distance))
+    self.printer.debug('\t\t\t len(self.sensor_left)   = ', len(self.sensor_left))
+    self.printer.debug('\t\t\t len(self.sensor_center) = ', len(self.sensor_center))
+    self.printer.debug('\t\t\t len(self.sensor_right)  = ', len(self.sensor_right))
+    self.printer.debug('\t\t\t self.x                  = ', self.x)
+    self.printer.debug('\t\t\t -------------- Append End --------------')
 
 
   def plot_history(self, flag):
@@ -797,8 +798,8 @@ class Car():
       if( flag == 1 or flag == 3 ): plt.show();
       if( flag == 2 or flag == 3 ): fig.savefig('sensorLeft_vs_yDistance_v1_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
 
-      printer.info('len(self.sensor_left) = ', len(self.sensor_left))
-      printer.info('len(self.y_distance) = ', len(self.y_distance))
+      self.printer.info('len(self.sensor_left) = ', len(self.sensor_left))
+      self.printer.info('len(self.y_distance) = ', len(self.y_distance))
 
       # Milyen kapcsolat van a közéső szenzor <<bemenő adat>> és a célváltozó között
       fig = plt.figure(figsize=(12, 5)); plt.scatter(self.sensor_center, self.y_distance, c=_array_target[:,2]);
@@ -1129,8 +1130,8 @@ class Car():
 
   def run(self, run_length, silent = False):
     for i in range(0, run_length, 1):
-      printer.util('# A run ciklus eleje --------------------------------------------------------------------------------------------------------------------')
-      printer.util('# i = ', i)
+      self.printer.util('# A run ciklus eleje --------------------------------------------------------------------------------------------------------------------')
+      self.printer.util('# i = ', i)
       _summary_mlp_prediction_was_taken = 0
       _summary_mlp_fit_was_taken = 0
       _summary_mesterseges_mozgatas = 0
@@ -1164,16 +1165,16 @@ class Car():
         
         if ( i % 3 == 0 and i >= 12 ):
 
-          printer.info('------------------------------ IF i % 3 == 0 ------------------------------')
-          printer.info('# i = ', i)
-          printer.util('# i = ', i)
-          printer.info('# 1. számú tanulás. Mi a kapcsolat a szenzoros adatok és aközött, hogy az út melyik részén van az autó (micadoban ez az NN)')
+          self.printer.info('------------------------------ IF i % 3 == 0 ------------------------------')
+          self.printer.info('# i = ', i)
+          self.printer.util('# i = ', i)
+          self.printer.info('# 1. számú tanulás. Mi a kapcsolat a szenzoros adatok és aközött, hogy az út melyik részén van az autó (micadoban ez az NN)')
           X = np.array([self.sensor_left, self.sensor_center, self.sensor_right]).T
           y = np.array([self.y_distance]).T
-          printer.debug('X.shape = ', X.shape)
-          printer.debug('y.shape = ', y.shape)
-          printer.debug('X       = ', X)
-          printer.debug('y       = ', y)
+          self.printer.debug('X.shape = ', X.shape)
+          self.printer.debug('y.shape = ', y.shape)
+          self.printer.debug('X       = ', X)
+          self.printer.debug('y       = ', y)
           
           _summary_mlp_fit_was_taken = 1
 # Lineáris regresszió helyett Neurális hálót használok
@@ -1181,20 +1182,20 @@ class Car():
           self.y_minmaxscaler.fit(y)
           X_scaled = self.x_minmaxscaler.transform(X)
           y_scaled = self.y_minmaxscaler.transform(y)
-          printer.debug('---------------------')
-          printer.debug('X.max = ', X.max())
-          printer.debug('X.min = ', X.min())
-          printer.debug('y.max = ', y.max())
-          printer.debug('y.min = ', y.min())
-          printer.debug('---------------------')
-          printer.debug('X_scaled.shape = ', X_scaled.shape)
-          printer.debug('y_scaled.shape = ', y_scaled.shape)
-          printer.info('---------------------')
-          printer.info('X_scaled.max = ', X_scaled.max())
-          printer.info('X_scaled.min = ', X_scaled.min())
-          printer.info('y_scaled.max = ', y_scaled.max())
-          printer.info('y_scaled.min = ', y_scaled.min())
-          printer.info('---------------------')
+          self.printer.debug('---------------------')
+          self.printer.debug('X.max = ', X.max())
+          self.printer.debug('X.min = ', X.min())
+          self.printer.debug('y.max = ', y.max())
+          self.printer.debug('y.min = ', y.min())
+          self.printer.debug('---------------------')
+          self.printer.debug('X_scaled.shape = ', X_scaled.shape)
+          self.printer.debug('y_scaled.shape = ', y_scaled.shape)
+          self.printer.info('---------------------')
+          self.printer.info('X_scaled.max = ', X_scaled.max())
+          self.printer.info('X_scaled.min = ', X_scaled.min())
+          self.printer.info('y_scaled.max = ', y_scaled.max())
+          self.printer.info('y_scaled.min = ', y_scaled.min())
+          self.printer.info('---------------------')
           self.mlp.fit(X_scaled, y_scaled)
 # hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
 # Ha olyanunk van plottoljunk
@@ -1205,13 +1206,13 @@ class Car():
 
         if( i % 3 == 1 and i >= 22 ):
 
-          printer.info('------------------------------ IF i % 3 == 1 ------------------------------')
-          printer.info('# i = ', i)
-          printer.info('# 2. az 1. pontban megtanult modell alapján teszünk egy becslést - tulajdonképpen ezzel mérem az 1. modell jóságát, ez a lépés ezt szolgálja')
+          self.printer.info('------------------------------ IF i % 3 == 1 ------------------------------')
+          self.printer.info('# i = ', i)
+          self.printer.info('# 2. az 1. pontban megtanult modell alapján teszünk egy becslést - tulajdonképpen ezzel mérem az 1. modell jóságát, ez a lépés ezt szolgálja')
           X_test = np.array([self.sensor_left, self.sensor_center, self.sensor_right]).T
           _X_test = np.array([X_test[-1,:].reshape(-1,1)])
           _X_test = np.array([X_test[-1,:]])
-          printer.info('actual _X_test = ', _X_test)
+          self.printer.info('actual _X_test = ', _X_test)
 
           _X_test_scaled = self.x_minmaxscaler.transform(_X_test)
           predicted_test = self.mlp.predict(_X_test_scaled)
@@ -1223,15 +1224,15 @@ class Car():
           predicted_test_inv = self.y_minmaxscaler.inverse_transform(predicted_test.reshape(-1, 1)).flatten()
           self.y_distance_predicted_inv.append(predicted_test_inv)
 
-          printer.investigation('actual predicted_test = ', predicted_test)
-          printer.investigation('actual self.y_distance[-1] = ', self.y_distance[-1])
-          printer.investigation('actual predicted_test_inv = ', predicted_test_inv)
-          printer.info('len(self.y_distance_real)      = ', len(self.y_distance_real))
-          printer.investigation('len(self.y_distance_predicted) = ', len(self.y_distance_predicted))
-          printer.investigation('len(self.y_distance_predicted_inv) = ', len(self.y_distance_predicted_inv))
-          printer.debug('self.y_distance_real = \n', self.y_distance_real)
-          printer.debug('self.y_distance_predicted = \n', self.y_distance_predicted)
-          printer.debug('self.y_distance_perdicted_inv = \n', self.y_distance_predicted_inv)
+          self.printer.investigation('actual predicted_test = ', predicted_test)
+          self.printer.investigation('actual self.y_distance[-1] = ', self.y_distance[-1])
+          self.printer.investigation('actual predicted_test_inv = ', predicted_test_inv)
+          self.printer.info('len(self.y_distance_real)      = ', len(self.y_distance_real))
+          self.printer.investigation('len(self.y_distance_predicted) = ', len(self.y_distance_predicted))
+          self.printer.investigation('len(self.y_distance_predicted_inv) = ', len(self.y_distance_predicted_inv))
+          self.printer.debug('self.y_distance_real = \n', self.y_distance_real)
+          self.printer.debug('self.y_distance_predicted = \n', self.y_distance_predicted)
+          self.printer.debug('self.y_distance_perdicted_inv = \n', self.y_distance_predicted_inv)
 
 
 # Plot : Minden 32-ik lépésbén kiplottoljuk a Neurális háló álltal előrejelzett és a tényleges adatok közötti kapcsolatot
@@ -1247,8 +1248,8 @@ class Car():
 # ToDo : itt még lehet, hogy kéne transzformálni y-t is és az egészet visszatranszformálni eredeti értékére + ellenőrizni, hogy tulajdonképpen amikor skálázom az y-t akkor mi alapján skálázok
             predicted_test_full = self.y_minmaxscaler.inverse_transform(predicted_test_full.reshape(-1, 1))
             _y_test_full = np.array([self.y_distance]).T
-            printer.info('_y_test_full.shape = ', _y_test_full.shape)
-            printer.info('predicted_test_full.shape = ', predicted_test_full.shape)
+            self.printer.info('_y_test_full.shape = ', _y_test_full.shape)
+            self.printer.info('predicted_test_full.shape = ', predicted_test_full.shape)
 
 
 # Plot
@@ -1274,18 +1275,18 @@ class Car():
 
         if( i % 3 == 2 ):
 
-          printer.info('------------------------------ IF i % 3 == 2 ------------------------------')
-          printer.info('# i = ', i)
-          printer.info('# 3. véletlenszerűen változtatok az autó pozicióján -> ebből állnak elő a before after adatok')
+          self.printer.info('------------------------------ IF i % 3 == 2 ------------------------------')
+          self.printer.info('# i = ', i)
+          self.printer.info('# 3. véletlenszerűen változtatok az autó pozicióján -> ebből állnak elő a before after adatok')
 
-          printer.info('self.y before move = ', self.y)
+          self.printer.info('self.y before move = ', self.y)
 
           _summary_mesterseges_mozgatas = 1
           
           if( self.mesterseges_coutner == 0 ):                             # Első lépésben fel
             self.before.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
             self.y = self.y + 1
-            printer.info('artificial move -> up first')
+            self.printer.info('artificial move -> up first')
             self.calculate_distances()
             self.after.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
             self.mesterseges_coutner = 1
@@ -1293,7 +1294,7 @@ class Car():
           elif( self.mesterseges_coutner == 1 ):                           # Második lépésben le
             self.before.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
             self.y = self.y - 1
-            printer.info('artificial move -> down first')
+            self.printer.info('artificial move -> down first')
             self.calculate_distances()
             self.after.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
             self.mesterseges_coutner = 2
@@ -1301,7 +1302,7 @@ class Car():
           elif( self.mesterseges_coutner == 2 ):                           # Harmadik lépésben le
             self.before.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
             self.y = self.y - 1
-            printer.info('artificial move -> down second')
+            self.printer.info('artificial move -> down second')
             self.calculate_distances()
             self.after.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
             self.mesterseges_coutner = 3
@@ -1309,15 +1310,15 @@ class Car():
           elif( self.mesterseges_coutner == 3 ):                           # Negyedik lépésben fel
             self.before.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
             self.y = self.y + 1
-            printer.info('artificial move -> up second')
+            self.printer.info('artificial move -> up second')
             self.calculate_distances()
             self.after.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
             self.mesterseges_coutner = 0
 
           else:
-            printer.info('semmi\n\n\n\n')
+            self.printer.info('semmi\n\n\n\n')
 
-          printer.info('self.y after move = ', self.y)
+          self.printer.info('self.y after move = ', self.y)
 
 
         # ------------------------------------------------ ACTION (X) ------------------------------------------------
@@ -1344,10 +1345,10 @@ class Car():
 
           if( len(self.before) > 9 ):
 
-            printer.info('------------------------------ IF len(self.before) > 9 ------------------------------')
-            printer.info('\n')
-            printer.info('  Ha már van elég before after adatunk')
-            printer.info('# 3. Tanulás itt kerül kiszámításra a lineáris regresszió minden egyes metrikára')
+            self.printer.info('------------------------------ IF len(self.before) > 9 ------------------------------')
+            self.printer.info('\n')
+            self.printer.info('  Ha már van elég before after adatunk')
+            self.printer.info('# 3. Tanulás itt kerül kiszámításra a lineáris regresszió minden egyes metrikára')
             # minden egyes szezor adatára el kell készítenünk azt a lineráis regressziós modelt ami megmondja, hogy mi lenne a szenzor értéke, ha 1, 2, 3, ... n lépéssel elvinnénk a kocsit
 
             # oké megvan a before és megvan az after (self.y, left, center, right)
@@ -1360,14 +1361,14 @@ class Car():
             after_array  = np.array(self.after)
             y_delta = after_array[:,0] - before_array[:,0]
             delta_array = after_array - before_array
-            printer.ba('\n----------------------- Before After Dataset Monitoring Block -----------------------')
-            printer.ba('y_delta = ', y_delta)
-            printer.ba('before_array.shape = ', before_array.shape)
-            printer.ba('after_array.shape  = ', after_array.shape)
-            printer.ba('self.before = \n', self.before)
-            printer.ba('self.after  = \n', self.after)
-            printer.ba('delta_array = \n', delta_array)
-            printer.ba('-----------------------------------------------------------------------------\n')
+            self.printer.ba('\n----------------------- Before After Dataset Monitoring Block -----------------------')
+            self.printer.ba('y_delta = ', y_delta)
+            self.printer.ba('before_array.shape = ', before_array.shape)
+            self.printer.ba('after_array.shape  = ', after_array.shape)
+            self.printer.ba('self.before = \n', self.before)
+            self.printer.ba('self.after  = \n', self.after)
+            self.printer.ba('delta_array = \n', delta_array)
+            self.printer.ba('-----------------------------------------------------------------------------\n')
 
             # képlet szerint sensor_after' = w0 + w1 * sensor_before + w2 * delta_y
   # ToDo a helyes képlet nem ez --------> ki kell javítani
@@ -1380,8 +1381,8 @@ class Car():
             # [[Gondolom világos de azért leírom, hogy nem az autó Y tengelyen vett poziciójábaól]]
             # [[Hanem abból, hogy mekkora volt az elmozdulása az Y tengelyen]]
 
-            printer.lr('# Linear Regression Learning --------------------------------------------------------------------------------------')
-            printer.lr('\t\t # Linear Regression Training Results -------------------------------------------------------------------------')
+            self.printer.lr('# Linear Regression Learning --------------------------------------------------------------------------------------')
+            self.printer.lr('\t\t # Linear Regression Training Results -------------------------------------------------------------------------')
 
   # -------------- left
             #> _X_left tehát a bemenet a left sensor before értéke és az y tengelyen vett elmozdulás mértéke
@@ -1393,11 +1394,11 @@ class Car():
             self.regression_left.fit(_X_left, _y_left)
             # print('\t\t _X_left <<sensor before, y elmozdulás mértéke>>   = \n', _X_left)
             # print('\t\t _y_left <<sensor after az érték amit becsülnünk>> = \n', _y_left)
-            printer.lr('\t\t ------------------------------- valyon mennyire jó a left   metrikának a becslése -----------------------------')
-# hhh            printer.lr('\t\t regression_left.coef_ = ', regression_left.coef_)
-            printer.lr('\t\t self.regression_left.coef_ = ', self.regression_left.coef_)
-# hhh            printer.lr('\t\t regression_left.intercept_ = ', regression_left.intercept_)
-            printer.lr('\t\t self.regression_left.intercept_ = ', self.regression_left.intercept_)
+            self.printer.lr('\t\t ------------------------------- valyon mennyire jó a left   metrikának a becslése -----------------------------')
+# hhh            self.printer.lr('\t\t regression_left.coef_ = ', regression_left.coef_)
+            self.printer.lr('\t\t self.regression_left.coef_ = ', self.regression_left.coef_)
+# hhh            self.printer.lr('\t\t regression_left.intercept_ = ', regression_left.intercept_)
+            self.printer.lr('\t\t self.regression_left.intercept_ = ', self.regression_left.intercept_)
             #> _predicted_left lesz a bemenete a neurális hálónak
             #  nem a mostani formájában mert itt a tényleges le fel skálázási adatok alapján tanítottuk meg a lineáris regressziós modelt
             #  arra, hogy milyen összefüggés van a (1) skálázás elötti szenzoros adat értéke (2) az elmozdulás mértéke (3) és az így kapott
@@ -1429,13 +1430,13 @@ class Car():
 
             self.plot_before_after_sensor_estimation_in_one_chart(_y_left, _predicted_left, y_delta, 'left', self.plot_before_after_sensor_estimation_flag)
 
-            printer.ba('_X_left << az a változó csomag ami adott szenzorra a sensor before értékét és az Y tengelyen vett elmozdulás mértékét tartalmazza >> = \n', _X_left)
-            printer.ba('_y_left << az a változó vector ami egy elmozdítás után mért szenzor értékét tartalmazza [ilyere változott] az elmozdítás után>> = \n', _y_left)
-            printer.ba('_predicted_left << az a változó vector amit az _X_left becsült _y_left értékeire [ez maga a becslést tartalmazó adatsor]>> = \n', _predicted_left)
+            self.printer.ba('_X_left << az a változó csomag ami adott szenzorra a sensor before értékét és az Y tengelyen vett elmozdulás mértékét tartalmazza >> = \n', _X_left)
+            self.printer.ba('_y_left << az a változó vector ami egy elmozdítás után mért szenzor értékét tartalmazza [ilyere változott] az elmozdítás után>> = \n', _y_left)
+            self.printer.ba('_predicted_left << az a változó vector amit az _X_left becsült _y_left értékeire [ez maga a becslést tartalmazó adatsor]>> = \n', _predicted_left)
             
             # Arra vagyok kiváncsi, hogy melyik az _X_left-ben a változás mértéke
-            printer.ba('_X_left.shape << ellenőrzés arra, hogy a két adacsomag hossaz megegyezik-e >>         = ', _X_left.shape)
-            printer.ba('_predicted_left.shape << ellenőrzés arra, hogy a két adacsomag hossaz megegyezik-e >> = ', _predicted_left.shape)
+            self.printer.ba('_X_left.shape << ellenőrzés arra, hogy a két adacsomag hossaz megegyezik-e >>         = ', _X_left.shape)
+            self.printer.ba('_predicted_left.shape << ellenőrzés arra, hogy a két adacsomag hossaz megegyezik-e >> = ', _predicted_left.shape)
 
             # Eddig egy konkrét sensor skálázás utáni értéke és skálázás utáni értéke becslés alapján közötti kapcsolatot vizsgáltunk
             # Most vizsgáljuk meg csak a maga egyszerűsgében azt, hogy milyen kapcsolat van a skálás elötti valós és a skálázás utáni valós érté között
@@ -1452,9 +1453,9 @@ class Car():
             # bal szenzor skálázás elötti és a bal szenzor skálázás utáni értéke között
             self.plot_before_after_sensor_values(_array_target_left, 'left', self.plot_before_after_sensor_values_flag)
             
-            printer.ba('before_array.shape = ', before_array[:,1].shape)
-            printer.ba('after_array.shape  = ', after_array[:,1].shape)
-            printer.ba('array_target_left  = \n', _array_target_left)
+            self.printer.ba('before_array.shape = ', before_array[:,1].shape)
+            self.printer.ba('after_array.shape  = ', after_array[:,1].shape)
+            self.printer.ba('array_target_left  = \n', _array_target_left)
 
 
   # -------------- center
@@ -1462,9 +1463,9 @@ class Car():
             _y_center = after_array[:,2].reshape(-1, 1)                   # center (after)
             regression_center = self.regression_center
             regression_center.fit(_X_center, _y_center)
-            printer.ba('\t\t ------------------------------- valyon mennyire jó a center metrikának a becslése -----------------------------')
-            printer.ba('\t\t regression_center.coef_ = ', regression_center.coef_)
-            printer.ba('\t\t regression_center.intercept_', regression_center.intercept_)
+            self.printer.ba('\t\t ------------------------------- valyon mennyire jó a center metrikának a becslése -----------------------------')
+            self.printer.ba('\t\t regression_center.coef_ = ', regression_center.coef_)
+            self.printer.ba('\t\t regression_center.intercept_', regression_center.intercept_)
             _predicted_center = regression_center.predict(_X_center)
 #            plt.scatter(_y_center, _predicted_center)
 #            plt.ylabel('_predicted_center')
@@ -1489,9 +1490,9 @@ class Car():
             _y_right = after_array[:,3].reshape(-1, 1)                   # right (after)
             regression_right = self.regression_right
             regression_right.fit(_X_right, _y_right)
-            printer.ba('\t\t ------------------------------- valyon mennyire jó a right  metrikának a becslése -----------------------------')
-            printer.ba('\t\t regression_right.coef_ = ', regression_right.coef_)
-            printer.ba('\t\t regression_right.intercept_ = ', regression_right.intercept_)
+            self.printer.ba('\t\t ------------------------------- valyon mennyire jó a right  metrikának a becslése -----------------------------')
+            self.printer.ba('\t\t regression_right.coef_ = ', regression_right.coef_)
+            self.printer.ba('\t\t regression_right.intercept_ = ', regression_right.intercept_)
             _predicted_right = regression_right.predict(_X_right)
 #            plt.scatter(_y_right, _predicted_right)
 #            plt.ylabel('_predicted_right')
@@ -1559,19 +1560,19 @@ class Car():
   # most
 
 
-            printer.action('\t # Az egyes lépések várható kimeneteinek kiszámolása ----------------------------------------------')
+            self.printer.action('\t # Az egyes lépések várható kimeneteinek kiszámolása ----------------------------------------------')
 
-            printer.action('\t\t # Ennyivel mozdulna el egy szenzor adat 1 egység változással ha 1 lenne a before értéke')
+            self.printer.action('\t\t # Ennyivel mozdulna el egy szenzor adat 1 egység változással ha 1 lenne a before értéke')
             proba_X_metrika   = np.array([1,1]).reshape(1, -1)
-            printer.action('proba_X_metrika   = ', proba_X_metrika)
+            self.printer.action('proba_X_metrika   = ', proba_X_metrika)
 # hhh            predicted_proba_left = regression_left.predict(proba_X_metrika)
             predicted_proba_left = self.regression_left.predict(proba_X_metrika)
             predicted_proba_center = regression_center.predict(proba_X_metrika)
             predicted_proba_right = regression_right.predict(proba_X_metrika)
-            printer.action('-------- 1 y up ->  left   = ', predicted_proba_left)
-            printer.action('-------- 1 y up ->  center = ', predicted_proba_center)
-            printer.action('-------- 1 y up ->  right  = ', predicted_proba_right)
-            printer.action('\n')
+            self.printer.action('-------- 1 y up ->  left   = ', predicted_proba_left)
+            self.printer.action('-------- 1 y up ->  center = ', predicted_proba_center)
+            self.printer.action('-------- 1 y up ->  right  = ', predicted_proba_right)
+            self.printer.action('\n')
 
             # EGY KURVA NAGY ELMÉLETI DILLEMMÁHOZ ÉRKEZTEM.
 
@@ -1592,9 +1593,9 @@ class Car():
             action = 0; tmp = 999999990
 
             for j in move:
-              printer.action('\n')
-              printer.action('\t\t minden j-re kiszámolom a regressziót és be is helyetessítjük a kapott értékekekt a modellbe')
-              printer.action('\t\t j = ', j)
+              self.printer.action('\n')
+              self.printer.action('\t\t minden j-re kiszámolom a regressziót és be is helyetessítjük a kapott értékekekt a modellbe')
+              self.printer.action('\t\t j = ', j)
               # ide be kell helyettesítenem az éppen aktuális értéket, olyan mintha egy új X változót csinálnék amiben csak egy sor van és arra kérnék egy becslést a korábbi modell alapján
               # a bement az éppen aktuális szenzoros érték és az új lépés
 
@@ -1603,10 +1604,10 @@ class Car():
               _X_center = np.array([[self.distance_center_from_wall, j]])
               _X_right  = np.array([[self.distance_right_from_wall, j]])
 
-              printer.action('\t\t ------------------------ a regresszió bemenetei az éppen aktuális értékek -------------------')
-              printer.action('\t\t _X_left   = ', _X_left)
-              printer.action('\t\t _X_center = ', _X_center)
-              printer.action('\t\t _X_right  = ', _X_right)
+              self.printer.action('\t\t ------------------------ a regresszió bemenetei az éppen aktuális értékek -------------------')
+              self.printer.action('\t\t _X_left   = ', _X_left)
+              self.printer.action('\t\t _X_center = ', _X_center)
+              self.printer.action('\t\t _X_right  = ', _X_right)
 
               # a fenti értékek valószínűleg jók, de mindíg minden lépésnél ellenőrizni kell
 
@@ -1614,19 +1615,19 @@ class Car():
               predicted_center = regression_center.predict(_X_center)
               predicted_right  = regression_right.predict(_X_right)
 
-              printer.action('\t\t predicted_left   = ', predicted_left)
-              printer.action('\t\t predicted_center = ', predicted_center)
-              printer.action('\t\t predicted_right  = ', predicted_right)
+              self.printer.action('\t\t predicted_left   = ', predicted_left)
+              self.printer.action('\t\t predicted_center = ', predicted_center)
+              self.printer.action('\t\t predicted_right  = ', predicted_right)
 
-              printer.action('\t\t --------------------- a regression úgy tűnik, hogy jó és pontos ----------------------')
-# hhh              printer.action('\t\t regression_left.coef_   = ', regression_left.coef_)
-              printer.action('\t\t self.regression_left.coef_   = ', self.regression_left.coef_)
-              printer.action('\t\t regression_center.coef_ = ', regression_center.coef_)
-              printer.action('\t\t regression_right.coef_  = ', regression_right.coef_)
-# hhh              printer.action('\t\t regression_left.intercept_   = ', regression_left.intercept_)
-              printer.action('\t\t self.regression_left.intercept_   = ', self.regression_left.intercept_)
-              printer.action('\t\t regression_center.intercept_ = ', regression_center.intercept_)
-              printer.action('\t\t regression_right.intercept_  = ', regression_right.intercept_)
+              self.printer.action('\t\t --------------------- a regression úgy tűnik, hogy jó és pontos ----------------------')
+# hhh              self.printer.action('\t\t regression_left.coef_   = ', regression_left.coef_)
+              self.printer.action('\t\t self.regression_left.coef_   = ', self.regression_left.coef_)
+              self.printer.action('\t\t regression_center.coef_ = ', regression_center.coef_)
+              self.printer.action('\t\t regression_right.coef_  = ', regression_right.coef_)
+# hhh              self.printer.action('\t\t regression_left.intercept_   = ', regression_left.intercept_)
+              self.printer.action('\t\t self.regression_left.intercept_   = ', self.regression_left.intercept_)
+              self.printer.action('\t\t regression_center.intercept_ = ', regression_center.intercept_)
+              self.printer.action('\t\t regression_right.intercept_  = ', regression_right.intercept_)
 
               # nekünk majd azt az értéket kell választanunk amelyik segítségével a legközelebb jutunk a 0 értékhez
 
@@ -1634,30 +1635,30 @@ class Car():
 
               _X_scaled = self.x_minmaxscaler.transform(_X)
 
-              printer.action('\t\t # Ez lesz a bemenete a neurális hálónak')
-              printer.action('\t\t -------------------------X-------------------------')
-              printer.action('\t\t ', _X)
-              printer.action('\t\t -------------------------X_scaled------------------')
-              printer.action('\t\t ', _X_scaled)
+              self.printer.action('\t\t # Ez lesz a bemenete a neurális hálónak')
+              self.printer.action('\t\t -------------------------X-------------------------')
+              self.printer.action('\t\t ', _X)
+              self.printer.action('\t\t -------------------------X_scaled------------------')
+              self.printer.action('\t\t ', _X_scaled)
 # Elvileg meg lehetne csinálni, hogy az új értékek is mindenféleképen a -1, 1 intervallumba essenek, de jelenleg nem így történik
 # Ez nem lesz könnyű
 
 # Ami itt nehéz lesz, hogy a régi X értékekhez, vagy ahhoz amin elvégeztem az x_minmaxscalert hozzá kell csapnom az új linreg által számolt _X
 # tömböt és azon megcsiálnom a teljes skálázást (bár ez az egész módszer nem biztos, hogy jó, sőt, de nincs jobb ötletem)
               
-              printer.action('\t\t ---------------Brutálisan hülye dolgot jelez előre ezért ellenőrizni kell, hogy mi a gond. Esetleg a bemeneti adatok?-----------------')
+              self.printer.action('\t\t ---------------Brutálisan hülye dolgot jelez előre ezért ellenőrizni kell, hogy mi a gond. Esetleg a bemeneti adatok?-----------------')
 
 # Lineáris regresszió
 #              predicted_position = self.regression.predict(_X)
 #              print('\t\t predicted_position linreg model            = ', predicted_position)
 # Lineáris regresszió helyett Neurális hálót használok
               predicted_position_scaled = self.mlp.predict(_X_scaled)
-              printer.action('\t\t predicted_position neural net model scaled = ', predicted_position_scaled)
+              self.printer.action('\t\t predicted_position neural net model scaled = ', predicted_position_scaled)
 # Vissza kell transzformálnom eredeti formájába
               predicted_position = self.y_minmaxscaler.inverse_transform(predicted_position_scaled.reshape(-1, 1))
-              printer.action('\t\t predicted_position neural net model inverz = ', predicted_position)
+              self.printer.action('\t\t predicted_position neural net model inverz = ', predicted_position)
 
-              printer.action('\t\t --------------------------------------------------------------------------------------------------------------------------------------')
+              self.printer.action('\t\t --------------------------------------------------------------------------------------------------------------------------------------')
 
               # legyünk bátrak és módosítsuk az autó self.y pozicióját
 
@@ -1671,16 +1672,16 @@ class Car():
               if( abs(0 - predicted_position) < tmp):       # rossz - javítva - tesztelés alatt
                 action = j
                 tmp = abs(0 - predicted_position)
-                printer.action('\t\t ---------------------')
-                printer.action('\t\t  action = ', action)
-                printer.action('\t\t  predicted_position = ', predicted_position)
-                printer.action('\t\t  absolute distance from 0 (tmp) = ', tmp)
-                printer.action('\t\t ---------------------')
+                self.printer.action('\t\t ---------------------')
+                self.printer.action('\t\t  action = ', action)
+                self.printer.action('\t\t  predicted_position = ', predicted_position)
+                self.printer.action('\t\t  absolute distance from 0 (tmp) = ', tmp)
+                self.printer.action('\t\t ---------------------')
 
-              printer.action('\t\t adott j-re {0} kiszámoltuk az előrejelzést de még nem hoztunk döntést -----------------------------------------------------------------'.format(j))
-              printer.action('\t\t --------------------------------------------------------------------------------------------------------------------------------------')
+              self.printer.action('\t\t adott j-re {0} kiszámoltuk az előrejelzést de még nem hoztunk döntést -----------------------------------------------------------------'.format(j))
+              self.printer.action('\t\t --------------------------------------------------------------------------------------------------------------------------------------')
             
-            printer.action('\t minden j-re kiszámoltuk az előrejelzést de még nem hoztunk döntést -------------------------------------------------\n')
+            self.printer.action('\t minden j-re kiszámoltuk az előrejelzést de még nem hoztunk döntést -------------------------------------------------\n')
 # igazság szerint ez a kör minden lépésben lefut ha már van elég before after adatunk
 
 
@@ -1689,13 +1690,13 @@ class Car():
 # version 20. if( i % 3 == 0 ) -> version 22. if( i % 3 == 1 )
 
           if( i % 3 == 0 ):                                                       # ugyan ez a feltétel amikor tanítom az út közepének a becslésére
-            printer.takeaction('------------------------------ IF i % 3 == 0 ------------------------------')
+            self.printer.takeaction('------------------------------ IF i % 3 == 0 ------------------------------')
             _summary_action_was_taken = 1
-            printer.takeaction('=================== TAKE ACTION ===================')
+            self.printer.takeaction('=================== TAKE ACTION ===================')
 # ez lett új az ML Auto 10.ipynb-hoz képest
             self.before.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
-            printer.takeaction('-------- ennyivel módosítom self.y értékét --------')
-            printer.takeaction('self.y régi értéke = ', self.y)
+            self.printer.takeaction('-------- ennyivel módosítom self.y értékét --------')
+            self.printer.takeaction('self.y régi értéke = ', self.y)
             # new v.27
             if( self.y < self.road.wall_left[self.x]):        # Ha magasabb mint a ball fal akkor tegye a fal alá egyel
               # self.y = self.road.wall_left[self.x] + 1
