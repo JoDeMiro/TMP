@@ -93,22 +93,29 @@ class TestCar():
           self.printer.sr('Sensor center = ', self.distance_center_from_wall)
           break
 
-    k = self.x; d = 0
-    while(k < self.x + self.sight):
-      k += 1;  d += 1
-      self.distance_left_from_wall = d
-      if(int(self.road.wall_left[k]) < self.y + d):
-        self.printer.sr('Sensor from left wall = ', self.distance_left_from_wall)
-        break
+#    k = self.x; d = 0
+#    while(k < self.x + self.sight):
+#      k += 1;  d += 1
+#      self.distance_left_from_wall = d
+#      if(int(self.road.wall_left[k]) < self.y + d):
+#        self.printer.sr('Sensor from left wall = ', self.distance_left_from_wall)
+#        break
 
-    k = self.x; d = 0
-    while(k < self.x + self.sight):
-      k += 1; d += 1
-      self.distance_right_from_wall = d
-      if(int(self.road.wall_right[k]) > self.y - d):
-        self.printer.sr('Sensor from right wall = ', self.distance_right_from_wall)
-        break
+    # Ehelyett most az van hogy nézzen simán oldalra
+    self.distance_left_from_wall = self.y - self.road.wall_left[self.x]
 
+#    k = self.x; d = 0
+#    while(k < self.x + self.sight):
+#      k += 1; d += 1
+#      self.distance_right_from_wall = d
+#      if(int(self.road.wall_right[k]) > self.y - d):
+#        self.printer.sr('Sensor from right wall = ', self.distance_right_from_wall)
+#        break
+
+# Ehelyett most az van hogy nézzen simán oldalra
+    self.distance_right_from_wall = self.road.wall_right[self.x] - self.y
+
+    # az ördög soha nem alszik
     self.distance_from_top     = abs(self.road.wall_left[self.x] - self.y)
     self.distance_from_bottom  = abs(self.road.wall_right[self.x] - self.y)
     self.printer.sr('most távolsagra van a felső faltól = ', self.distance_from_top)
@@ -510,19 +517,17 @@ class Car():
     self.distance_left_from_wall = self.y - self.road.wall_left[self.x]
 
 
- #   k = self.x; d = 0
- #   while(k < self.x + self.sight):
- #     k += 1; d += 1
- #     self.distance_right_from_wall = d
- #     if(int(self.road.wall_right[k]) > self.y - d):
- #       self.printer.sr('Sensor from right wall = ', self.distance_right_from_wall)
- #       break
+#    k = self.x; d = 0
+#    while(k < self.x + self.sight):
+#      k += 1; d += 1
+#      self.distance_right_from_wall = d
+#      if(int(self.road.wall_right[k]) > self.y - d):
+#        self.printer.sr('Sensor from right wall = ', self.distance_right_from_wall)
+#        break
 
 # Ehelyett most az van hogy nézzen simán oldalra
     self.distance_right_from_wall = self.road.wall_right[self.x] - self.y
 
-    # ToDo - tuti hogy szar, ugyhogy ki kéne printelni ezt az értéket
-    print('self.distance_right_from_wall = ', self.distance_right_from_wall)
 
 
 
