@@ -157,9 +157,9 @@ class TestCar():
 
       print(' --------------- plot --------------- ')
 
-  def plot_history_fixed(self, flag, ymin, ymax, height):
+  def plot_history_fixed(self, flag, ymin, ymax, width, height):
     if( flag != 0 ):
-      fig, ax = self.road.show(height)
+      fig, ax = self.road.show(width, height)
       circle = plt.Circle((self.x, self.y), 5, color='black')
       ax.add_patch(circle)
       # v.24 - add standardized color -> left = green, rigth = orange
