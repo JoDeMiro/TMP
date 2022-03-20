@@ -1,3 +1,5 @@
+import numpy as np
+
 class Road():
   def __init__(self, wide, length, type=1, v=124):
     self.length      = length # 3000
