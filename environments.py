@@ -97,7 +97,7 @@ class Road():
     wall_left   = 30*(np.sin(distance/180)) + distance * 0.3 + 30 * np.cos(distance/30) + 50 * np.sin(distance/90)
     # wall_left[0:100] = 60
     # wall_right  = wall_left + road
-    _distance += u
+    _distance = distance + u
     wall_right  = a*(np.sin(_distance/180)) + _distance * b + c * np.cos(_distance/d) + e * np.sin(_distance/f)
     wall_right  += v
     wall_center = ( 1.3 * wall_left + 0.7 * wall_right ) / n
