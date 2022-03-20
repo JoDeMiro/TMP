@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 class Road():
   def __init__(self, wide, length, type=1, v=124):
