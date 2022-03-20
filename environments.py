@@ -110,7 +110,7 @@ class Road():
   def show(self, height = 10):
     _y_max = np.max(self.wall_left)
     fig, ax = plt.subplots(figsize=(26,height)); ax.set_ylim(40, _y_max); ax.plot(self.wall_left); ax.plot(self.wall_right); ax.plot(self.wall_center);
-    pass
+    return fig, ax
 
   
   def description(self):
