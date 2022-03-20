@@ -1,3 +1,6 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
 class PostPlotter():
   def __init__(self, car):
     self.car = car
@@ -365,6 +368,387 @@ class PostPlotter():
       if( flag == 2 or flag == 3 ):
         fig.savefig(fileName + '_3D_v1_{0:04}'.format(i)+'.png'); plt.close(fig);
         plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+
+# -------------------------------------------------------------------------------
+
+
+class Plotter():
+  def __init__(self):
+    pass
+
+  def plot_mlp(self, mlp, flag):
+
+    if( flag != 0 ):
+
+      num_input_varialbe = ['sensor_left','sensor_center', 'sensor_right']
+
+      # Define the structure of the network
+      network_structure = np.hstack(([len(num_input_varialbe)], np.asarray(mlp.hidden_layer_sizes), [1]))
+
+      print(network_structure)
+
+      # Draw the Neural Network with weights
+      network = DrawNN(network_structure, mlp.coefs_, num_input_varialbe)
+      network.draw(flag)
+  
+  def plot_y_move(self, y_history, x, flag):
+
+    if( flag != 0 ):
+
+      fileName = 'y_move'
+      fig = plt.figure(figsize=(10.5, 6))
+      y_move = np.diff(np.array(y_history), 1, -1, prepend=0)
+      y_move[0] = 0
+      plt.plot(y_move)
+      plt.hlines(0, 0, 100)
+      plt.title('#i = ' + str(x))
+      # plt.title('#i = ' + str(x), fontsize=18, fontweight='bold');
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_{0:04}'.format(x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+  def test_plot2(self, sensor_left, sensor_right, y_distance, x, flag, lists):
+
+    if( flag != 0 ):
+
+      if( 6 in lists or 99 in lists ):
+
+        fileName = 'timeline_sensors'
+
+        fig, ax1 = plt.subplots(figsize=(15,5))
+
+        ax1.set_title('#i = ' + str(x), fontsize=18, fontweight='bold');
+
+        ax2 = ax1.twinx()
+
+        ax1.plot(sensor_left, label='left distance')
+        ax1.plot(sensor_right, label='right distance')
+        ax1.plot(y_distance, label='dist. from center')
+
+        err = np.cumsum(np.abs(y_distance))
+        ax2.plot(err, c='black', label='cummulative error')
+
+        ax1.set_xlabel('time')
+        ax1.set_ylabel('sensor values', color='black')
+        ax2.set_ylabel('cummulative error', color='black')
+
+        ax1.legend(frameon=False)
+        ax2.legend(frameon=False)
+
+        if( flag == 1 or flag == 3 ): plt.show()
+        if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_v1_{0:04}'.format(x)+'.png'); plt.close(fig)
+
+  def test_plot(self, sensor_left, sensor_right, y_distance, x, flag, lists = [0]):
+
+    if( flag != 0 ):
+
+      __x_max = np.max(sensor_left); __x_min = np.min(sensor_left);
+      __y_max = np.max(sensor_right); __y_min = np.min(sensor_right);
+      __z_max = np.max(y_distance); __z_min = np.min(y_distance);
+
+      __x = sensor_left[-1]; __y = sensor_right[-1]; __z = y_distance[-1];
+
+      fileName = 'state_space_discover_new_plotter'
+
+      if( 1 in lists or 99 in lists ):
+
+        # version 1
+
+        szin = np.arange(len(sensor_right))
+        
+        fig = plt.figure(figsize=(10,10))
+        ax = fig.add_subplot(projection='3d')
+        ax.scatter(sensor_left, sensor_right, y_distance, c=szin)
+        ax.set_xlabel('sensor left')
+        ax.set_ylabel('sensor right')
+        ax.set_zlabel('y_distance')
+
+        # ax.invert_xaxis()
+
+        ax.set_xlim(__x_min, __x_max);
+        ax.set_ylim(__y_min, __y_max);
+        ax.set_zlim(__z_min, __z_max);
+
+        xe = 0; xv = 10;            xe = __x_min; xv = __x_max;
+        ye = 10; yv = 10;           ye = __y; yv = __y;
+        ze = -50; zv = -50;         ze = ax.get_zlim()[0]; zv = ax.get_zlim()[0];
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='blue')
+
+        xe = 10; xv = 10;           xe = __x_min; xv = __x_min;
+        ye = 0; yv = 100;           ye = __y_min; yv = __y_max;
+        ze = 20; ze = 20;           ze = __z; zv = __z;
+
+        ax.plot([xe,xv],[ye,yv], [ze,zv], c='green')
+
+        xe = 0; xv = 0;             xe = __x; xv = __x;
+        ye = 0; yv = 100;           ye = __y_max; yv = __y_max;
+        ze = -50; zv = -50;         ze = __z_min; zv = __z_max;
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='orange')
+
+        if( flag == 1 or flag == 3 ): plt.show()
+        if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_LeftRightYDistance_3D_v1_{0:04}'.format(x)+'.png'); plt.close(fig)
+
+
+
+
+      if( 2 in lists or 99 in lists ):
+
+        # version 2
+
+        szin = np.arange(len(sensor_right))
+        fig = plt.figure(figsize=(10,10))
+        ax = fig.add_subplot(projection='3d')
+        ax.scatter(sensor_left, sensor_right, y_distance, c=szin)
+        ax.set_xlabel('sensor left')
+        ax.set_ylabel('sensor right')
+        ax.set_zlabel('y_distance')
+
+        ax.set_xlim(__x_min, __x_max);
+        ax.set_ylim(__y_min, __y_max);
+        ax.set_zlim(__z_min, __z_max);
+
+        xe = 0; xv = 10;            xe = __x_min; xv = __x_max;
+        ye = 10; yv = 10;           ye = __y; yv = __y;
+        ze = -50; zv = -50;         ze = __z; zv = __z;
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='blue')
+
+        xe = 10; xv = 10;           xe = __x; xv = __x;
+        ye = 0; yv = 100;           ye = __y_min; yv = __y_max;
+        ze = 20; ze = 20;           ze = __z; zv = __z;
+
+        ax.plot([xe,xv],[ye,yv], [ze,zv], c='green')
+
+        xe = 0; xv = 0;             xe = __x; xv = __x;
+        ye = 0; yv = 100;           ye = __y; yv = __y;
+        ze = -50; zv = -50;         ze = __z_min; zv = __z_max;
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='orange')
+        
+        if( flag == 1 or flag == 3 ): plt.show()
+        if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_LeftRightYDistance_3D_v2_{0:04}'.format(x)+'.png'); plt.close(fig)
+
+
+
+
+      if( 3 in lists or 99 in lists ):
+
+        # version 3
+
+        szin = np.arange(len(sensor_right))
+        fig = plt.figure(figsize=(10,10))
+        ax = fig.add_subplot(projection='3d')
+        ax.scatter(sensor_left, sensor_right, y_distance, c=szin)
+        ax.set_xlabel('sensor left')
+        ax.set_ylabel('sensor right')
+        ax.set_zlabel('y_distance')
+
+        ax.set_xlim(__x_min, __x_max);
+        ax.set_ylim(__y_min, __y_max);
+        ax.set_zlim(__z_min, __z_max);
+
+        xe = 0; xv = 0;             xe = __x; xv = __x;
+        ye = 0; yv = 100;           ye = ax.get_ylim()[0]; yv = ax.get_ylim()[1];
+        ze = -50; zv = -50;         ze = ax.get_zlim()[0]; zv = ax.get_zlim()[0];
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='blue')
+
+        xe = 0; xv = 10;            xe = __x_min; xv = __x_max;
+        ye = 10; yv = 10;           ye = __y; yv = __y;
+        ze = -50; zv = -50;         ze = ax.get_zlim()[0]; zv = ax.get_zlim()[0];
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='blue')
+
+        xe = 10; xv = 10;           xe = ax.get_xlim()[0]; xv = ax.get_xlim()[0];
+        ye = 0; yv = 100;           ye = __y; yv = __y;
+        ze = 20; ze = 20;           ze = __z_min; zv = __z_max;
+
+        ax.plot([xe,xv],[ye,yv], [ze,zv], c='green')
+
+        xe = 10; xv = 10;           xe = __x_min; xv = __x_min;
+        ye = 0; yv = 100;           ye = __y_min; yv = __y_max;
+        ze = 20; ze = 20;           ze = __z; zv = __z;
+
+        ax.plot([xe,xv],[ye,yv], [ze,zv], c='green')
+
+        xe = 0; xv = 0;             xe = __x_min; xv = __x_max;
+        ye = 0; yv = 100;           ye = __y_max; yv = __y_max;
+        ze = -50; zv = -50;         ze = __z; zv = __z;
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='orange')
+
+        xe = 0; xv = 0;             xe = __x; xv = __x;
+        ye = 0; yv = 100;           ye = __y_max; yv = __y_max;
+        ze = -50; zv = -50;         ze = __z_min; zv = __z_max;
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='orange')
+
+        ax.view_init(elev=20., azim=-35)
+
+        if( flag == 1 or flag == 3 ): plt.show()
+        if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_LeftRightYDistance_3D_v3_{0:04}'.format(x)+'.png'); plt.close(fig)
+
+
+
+      if( 4 in lists or 99 in lists ):
+
+        # version 4
+
+        szin = np.arange(len(sensor_right))
+        fig = plt.figure(figsize=(10,10))
+        ax = fig.add_subplot(projection='3d')
+        ax.scatter(sensor_left, sensor_right, y_distance, c=szin)
+        ax.set_xlabel('sensor left')
+        ax.set_ylabel('sensor right')
+        ax.set_zlabel('y_distance')
+
+        ax.set_xlim(__x_min, __x_max);
+        ax.set_ylim(__y_min, __y_max);
+        ax.set_zlim(__z_min, __z_max);
+
+        xe = 0; xv = 0;             xe = __x; xv = __x;
+        ye = 0; yv = 100;           ye = ax.get_ylim()[0]; yv = ax.get_ylim()[1];
+        ze = -50; zv = -50;         ze = ax.get_zlim()[0]; zv = ax.get_zlim()[0];
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='blue')
+
+        xe = 0; xv = 10;            xe = __x_min; xv = __x_max;
+        ye = 10; yv = 10;           ye = __y; yv = __y;
+        ze = -50; zv = -50;         ze = ax.get_zlim()[0]; zv = ax.get_zlim()[0];
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='blue')
+
+        xe = 10; xv = 10;           xe = ax.get_xlim()[0]; xv = ax.get_xlim()[0];
+        ye = 0; yv = 100;           ye = __y; yv = __y;
+        ze = 20; ze = 20;           ze = __z_min; zv = __z_max;
+
+        ax.plot([xe,xv],[ye,yv], [ze,zv], c='green')
+
+        xe = 10; xv = 10;           xe = __x_min; xv = __x_min;
+        ye = 0; yv = 100;           ye = __y_min; yv = __y_max;
+        ze = 20; ze = 20;           ze = __z; zv = __z;
+
+        ax.plot([xe,xv],[ye,yv], [ze,zv], c='green')
+
+        xe = 0; xv = 0;             xe = __x_min; xv = __x_max;
+        ye = 0; yv = 100;           ye = __y_max; yv = __y_max;
+        ze = -50; zv = -50;         ze = __z; zv = __z;
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='orange')
+
+        xe = 0; xv = 0;             xe = __x; xv = __x;
+        ye = 0; yv = 100;           ye = __y_max; yv = __y_max;
+        ze = -50; zv = -50;         ze = __z_min; zv = __z_max;
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='orange')
+
+        # ---
+        xe = 0; xv = 0;             xe = __x; xv = __x;
+        ye = 0; yv = 100;           ye = ax.get_ylim()[0]; yv = ax.get_ylim()[1];
+        ze = -50; zv = -50;         ze = __z; zv = __z;
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='orange', linestyle='dashed') #dotted
+
+        xe = 0; xv = 0;             xe = __x_min; xv = __x;
+        ye = 0; yv = 100;           ye = __y; yv = __y;
+        ze = -50; zv = -50;         ze = __z; zv = __z;
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='green', linestyle='dashed') #dotted
+
+        xe = 0; xv = 0;             xe = __x; xv = __x;
+        ye = 0; yv = 100;           ye = __y; yv = __y;
+        ze = -50; zv = -50;         ze = __z_min; zv = __z;
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='blue', linestyle='dashed') #dotted
+
+        if( flag == 1 or flag == 3 ): plt.show()
+        if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_LeftRightYDistance_3D_v4_{0:04}'.format(x)+'.png'); plt.close(fig)
+
+
+
+      if( 5 in lists or 99 in lists ):
+
+        # version 5
+
+        szin = np.arange(len(sensor_right))
+        fig = plt.figure(figsize=(10,10))
+        ax = fig.add_subplot(projection='3d')
+        ax.scatter(sensor_left, sensor_right, y_distance, c=szin)
+        ax.set_xlabel('sensor left')
+        ax.set_ylabel('sensor right')
+        ax.set_zlabel('y_distance')
+
+        __x_min = 0; __x_max = 200;
+        __y_min = 0; __y_max = 200;
+        __z_min = -50; __z_max = 50;
+
+        ax.set_xlim(__x_min, __x_max);
+        ax.set_ylim(__y_min, __y_max);
+        ax.set_zlim(__z_min, __z_max);
+
+        xe = 0; xv = 0;             xe = __x; xv = __x;
+        ye = 0; yv = 100;           ye = ax.get_ylim()[0]; yv = ax.get_ylim()[1];
+        ze = -50; zv = -50;         ze = ax.get_zlim()[0]; zv = ax.get_zlim()[0];
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='blue')
+
+        xe = 0; xv = 10;            xe = __x_min; xv = __x_max;
+        ye = 10; yv = 10;           ye = __y; yv = __y;
+        ze = -50; zv = -50;         ze = ax.get_zlim()[0]; zv = ax.get_zlim()[0];
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='blue')
+
+        xe = 10; xv = 10;           xe = ax.get_xlim()[0]; xv = ax.get_xlim()[0];
+        ye = 0; yv = 100;           ye = __y; yv = __y;
+        ze = 20; ze = 20;           ze = __z_min; zv = __z_max;
+
+        ax.plot([xe,xv],[ye,yv], [ze,zv], c='green')
+
+        xe = 10; xv = 10;           xe = __x_min; xv = __x_min;
+        ye = 0; yv = 100;           ye = __y_min; yv = __y_max;
+        ze = 20; ze = 20;           ze = __z; zv = __z;
+
+        ax.plot([xe,xv],[ye,yv], [ze,zv], c='green')
+
+        xe = 0; xv = 0;             xe = __x_min; xv = __x_max;
+        ye = 0; yv = 100;           ye = __y_max; yv = __y_max;
+        ze = -50; zv = -50;         ze = __z; zv = __z;
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='orange')
+
+        xe = 0; xv = 0;             xe = __x; xv = __x;
+        ye = 0; yv = 100;           ye = __y_max; yv = __y_max;
+        ze = -50; zv = -50;         ze = __z_min; zv = __z_max;
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='orange')
+
+        # ---
+        xe = 0; xv = 0;             xe = __x; xv = __x;
+        ye = 0; yv = 100;           ye = ax.get_ylim()[0]; yv = ax.get_ylim()[1];
+        ze = -50; zv = -50;         ze = __z; zv = __z;
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='orange', linestyle='dashed') #dotted
+
+        xe = 0; xv = 0;             xe = __x_min; xv = __x;
+        ye = 0; yv = 100;           ye = __y; yv = __y;
+        ze = -50; zv = -50;         ze = __z; zv = __z;
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='green', linestyle='dashed') #dotted
+
+        xe = 0; xv = 0;             xe = __x; xv = __x;
+        ye = 0; yv = 100;           ye = __y; yv = __y;
+        ze = -50; zv = -50;         ze = __z_min; zv = __z;
+
+        ax.plot([xe,xv],[ye,yv],[ze,zv], c='blue', linestyle='dashed') #dotted
+
+        ax.view_init(elev=20., azim=-35)
+
+        if( flag == 1 or flag == 3 ): plt.show()
+        if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_LeftRightYDistance_3D_v5_{0:04}'.format(x)+'.png'); plt.close(fig)
+
+
 
 
   
