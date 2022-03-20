@@ -91,7 +91,7 @@ class Road():
 
 
 
-  def wizu(u = 100, v = 100, a=30, b=0.3, c=30, d=30, e=50, f=90, n=2):
+  def wizu(self, u = 100, v = 100, a=30, b=0.3, c=30, d=30, e=50, f=90, n=2):
     self.wall_left   = 30*(np.sin(self.distance/180)) + self.distance * 0.3 + 30 * np.cos(self.distance/30) + 50 * np.sin(self.distance/90)
     self.wall_left[0:100] = 60
     self.distance += u
@@ -110,6 +110,7 @@ class Road():
   def show(self, height = 10):
     _y_max = np.max(self.wall_left)
     fig, ax = plt.subplots(figsize=(26,height)); ax.set_ylim(40, _y_max); ax.plot(self.wall_left); ax.plot(self.wall_right); ax.plot(self.wall_center);
+    pass
 
   
   def description(self):
