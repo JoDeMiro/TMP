@@ -145,13 +145,17 @@ class TestCar():
       ax.add_patch(circle)
       # v.24 - add standardized color -> left = green, rigth = orange
       ax.plot(range(int(self.x), int(self.x+self.distance_center_from_wall)), np.repeat(self.y, self.distance_center_from_wall))
-      ax.plot(range(int(self.x), int(self.x+self.distance_left_from_wall)), range(int(self.y), int(self.y+self.distance_left_from_wall)), c='green')
-      ax.plot(range(int(self.x), int(self.x+self.distance_right_from_wall)), range(int(self.y), int(self.y-self.distance_right_from_wall), -1), c='orange')
+      # ax.plot(range(int(self.x), int(self.x+self.distance_left_from_wall)), range(int(self.y), int(self.y+self.distance_left_from_wall)))
+      # ax.plot(range(int(self.x), int(self.x+self.distance_right_from_wall)), range(int(self.y), int(self.y-self.distance_right_from_wall), -1))
+      ax.vlines(x = self.x, ymin = self.y, ymax = self.road.wall_left[self.x])
+      ax.vlines(x = self.x, ymin = self.y, ymax = self.road.wall_right[self.x])
       if( len(self.y_history) > 0 ):
         ax.plot(self.y_history)
         ax.set_title('#i = ' + str(self.x), fontsize=18, fontweight='bold')
       if( flag == 1 or flag == 3 ): plt.show();
-      if( flag == 2 or flag == 3 ): fig.savefig('test_history{0:04}'.format(self.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+      if( flag == 2 or flag == 3 ): fig.savefig('history{0:04}'.format(self.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+      print(' --------------- plot --------------- ')
 
 
   def save_plots(self):
