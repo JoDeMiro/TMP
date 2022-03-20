@@ -20,7 +20,7 @@ from storages import Storage
 from IPython.display import clear_output
 
 class TestCar():
-  def __init__(self, road, plotter, storage):
+  def __init__(self, road, plotter, storage, printer):
     self.plot_frequency = 9
     self.plot_detailed_frequency = 32
     self.plot_history_flag = 0                          # 0 - disable, 1 - plot, 2 - save, 3 - both
@@ -73,8 +73,7 @@ class TestCar():
     self.mesterseges_coutner = 0
 
     # logger helyett
-    global printer
-    printer = Printer()
+    self.printer = printer
     self.printer._ac = False
 
 
@@ -470,8 +469,6 @@ class Car():
 
 # logger helyett
     self.printer = printer
-    # global printer
-    # printer = Printer()
 
 
   def calculate_distances(self):
