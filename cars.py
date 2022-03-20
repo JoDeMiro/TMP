@@ -346,3 +346,1421 @@ class TestCar():
     if ( i % 10 == 0 ):
       clear_output(wait=True)
       
+
+# ------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+class Car():
+  def __init__(self, road, plotter, storage, printer):
+    self.plot_frequency = 9
+    self.plot_detailed_frequency = 32
+    self.plot_history_flag = 0                          # 0 - disable, 1 - plot, 2 - save, 3 - both
+    self.plot_investigation_flag = 0                    # 0 - disable, 1 - plot, 2 - save, 3 - both
+    self.plot_before_after_sensor_values_flag = 0       # 0 - disable, 1 - plot, 2 - save, 3 - both
+    self.plot_before_after_sensor_estimation_flag = 0   # 0 - disable, 1 - plot, 2 - save, 3 - both
+    self.plot_state_space_discover_flag = 0             # 0 - disable, 1 - plot, 2 - save, 3 - both
+    self.plot_trace_flag = 0                            # 0 - disable, 1 - plot, 2 - save, 3 - both
+    self.plotter_flag = 0                               # 0 - disable, 1 - plot, 2 - save, 3 - both
+    self.plotter_switch = [6]                           # [] - none, [1], [1,2], [1,3], [99] - all
+    self.plotter_mlp_flag = 0                           # 0 - disable, 1 - plot, 2 - save, 3 - both
+
+    self.sensor_center_enable = True
+
+    self.plotter = plotter
+
+    self.storage = storage
+
+    self.road = road
+    self.x = 0
+    self.y = self.road.wall_center[0]
+    self.sight = 400           # ennyit lát előre 300, 54, 154
+    self.sight_center = 400    # ennyit lát előre 150
+
+    self.y_history  = []
+    self.x_history  = []
+    # self.y_center   = []
+    self.y_center   = self.road.wall_center
+    self.y_distance = []
+    self.y_distance_real = []
+    self.y_distance_predicted = []
+    self.y_distance_predicted_inv = []
+# Bevezetésre került a LinearRegression intercept nélkül
+    self.regression = LinearRegression(fit_intercept=False)
+# Bevezetésre került az MLPRegreression
+    self.mlp = MLPRegressor(hidden_layer_sizes=(10, 5), # (10, 5)
+                            activation='tanh', # relu, tanh, logistic
+                            solver='adam',
+                            batch_size='auto',
+                            learning_rate_init=0.01,
+                            max_iter=1,                           # incremental learning - one step
+                            shuffle=False,                        # erre is oda kell figyelni
+                            random_state=1,
+                            verbose=True, warm_start=True,        # New test warm_start and verbose 9:19 alatt 719-ig, 600 5:34
+                            momentum=0.9,
+                            nesterovs_momentum=True,
+                            early_stopping=True,
+                            n_iter_no_change=2000)
+# Bevezetésre került az X MinMaxScaler
+    self.x_minmaxscaler = MinMaxScaler(feature_range=(-1,1))
+# Bevezetésre került az y MinMaxScaler
+    self.y_minmaxscaler = MinMaxScaler(feature_range=(-1,1))
+#
+#    self.regression_left = LinearRegression()
+    self.regression_left = LinearRegression(fit_intercept=False)
+#    self.regression_center = LinearRegression()
+    self.regression_center = LinearRegression(fit_intercept=False)
+#    self.regression_right = LinearRegression()
+    self.regression_right = LinearRegression(fit_intercept=False)
+
+# data holders
+    self.sensor_center = []
+    self.sensor_left   = []
+    self.sensor_right  = []
+    self.before  = []
+    self.after   = []
+
+# new v.25
+# model data holders
+    self.regression_left_coef_history = []
+    self.regression_center_coef_history = []
+    self.regression_right_coef_history = []
+
+    self.mesterseges_coutner = 0
+
+# logger helyett
+    global printer
+    printer = Printer()
+
+
+  def calculate_distances(self):
+    # ha bármikor kevesebb a faltól mért távolsága bármelyik szenzoron akkor a szenzorokon mért távolság is ennyi lesz
+    
+#    k = self.x; d = 0
+#    while(k < self.x + self.sight_center):
+#      k += 1; d += 1
+#      self.distance_center_from_wall = d
+#      if(int(self.road.wall_left[k]) < self.y):
+#        printer.sr('Sensor center = ', self.distance_center_from_wall)
+#        break
+#      if(int(self.road.wall_right[k]) > self.y):
+#        printer.sr('Sensor center = ', self.distance_center_from_wall)
+#        break
+
+    k = self.x; d = 0
+    while(k < self.x + self.sight_center):
+      k += 1; d += 1
+      self.distance_center_from_wall = d
+      # v.24 - new
+      if( self.sensor_center_enable == True ):
+        if(int(self.road.wall_left[k]) < self.y):
+          printer.sr('Sensor center = ', self.distance_center_from_wall)
+          break
+        if(int(self.road.wall_right[k]) > self.y):
+          printer.sr('Sensor center = ', self.distance_center_from_wall)
+          break
+
+#    k = self.x; d = 0
+#    while(k < self.x + self.sight):
+#      k += 1;  d += 1
+#      self.distance_left_from_wall = d
+#      if(int(self.road.wall_left[k]) < self.y + d):
+#        printer.sr('Sensor from left wall = ', self.distance_left_from_wall)
+#        break
+
+# Ehelyett most az van hogy nézzen simán oldalra
+    self.distance_left_from_wall = self.y - self.road.wall_left[self.x]
+
+
+ #   k = self.x; d = 0
+ #   while(k < self.x + self.sight):
+ #     k += 1; d += 1
+ #     self.distance_right_from_wall = d
+ #     if(int(self.road.wall_right[k]) > self.y - d):
+ #       printer.sr('Sensor from right wall = ', self.distance_right_from_wall)
+ #       break
+
+# Ehelyett most az van hogy nézzen simán oldalra
+    self.distance_right_from_wall = self.road.wall_right[self.x] - self.y
+
+    # ToDo - tuti hogy szar, ugyhogy ki kéne printelni ezt az értéket
+    print('self.distance_right_from_wall = ', self.distance_right_from_wall)
+
+
+
+    # ki kell kalkulálni a tényleges távolságot a ball és a jobb faltól
+    # mert ezekre fogom tanítani a neurális hálót, ahol ezeket becsüljük
+    # és a bemeneti változó a 3 szenzorból érkező adat lesz.
+    # valójában azt mérjük, hogy milyen távolságra van az út közepétől
+
+    self.distance_from_top     = abs(self.road.wall_left[self.x] - self.y)
+    self.distance_from_bottom  = abs(self.road.wall_right[self.x] - self.y)
+    printer.sr('most távolsagra van a felső faltól = ', self.distance_from_top)
+    printer.sr('most távolsagra van az alsó faltól = ', self.distance_from_bottom)
+
+
+    printer.info('cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc')
+    printer.info('self.x                       = ', self.x)
+    printer.info('cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc')
+
+    # ezt az értéket fogom becsülni, a középértéktől való eltérés mértéke, ha pozitív akkor fölfelé, ha negatív akkor lefelé tér el
+    self.vertical_distance_from_middle = self.y - self.road.wall_center[self.x]
+
+    printer.info('KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK')
+    printer.info('self.vertical_distance_from_middle = ', self.vertical_distance_from_middle)
+    printer.info('KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK')
+
+
+
+
+    printer.info('ezt fogjuk becsülni, ez a középértéktől való eltérés mértéke = ', self.vertical_distance_from_middle)
+
+
+    # de elötte szeretnék még valamit leellenőrizni
+    # ezeknek a hossza nem fog megeggyezni a tényleges futások számával, hanem több lesz
+    # (milyen jó lett volna erre egy teszt esetet írni és akkor test driven development lenne)
+
+    printer.debug('\t\t\t ---------------- Teszt ----------------')
+    printer.debug('\t\t\t len(self.y_distance)    = ', len(self.y_distance))
+    printer.debug('\t\t\t len(self.sensor_left)   = ', len(self.sensor_left))
+    printer.debug('\t\t\t len(self.sensor_center) = ', len(self.sensor_center))
+    printer.debug('\t\t\t len(self.sensor_right)  = ', len(self.sensor_right))
+    printer.debug('\t\t\t self.x                  = ', self.x)
+    printer.debug('\t\t\t -------------- Teszt End --------------')
+
+
+  def append(self):
+    self.y_distance.append(self.vertical_distance_from_middle)
+
+    self.sensor_left.append(self.distance_left_from_wall)
+    self.sensor_center.append(self.distance_center_from_wall)
+    self.sensor_right.append(self.distance_right_from_wall)
+
+    printer.debug('\t\t\t ---------------- Append ----------------')
+    printer.debug('\t\t\t len(self.y_distance)    = ', len(self.y_distance))
+    printer.debug('\t\t\t len(self.sensor_left)   = ', len(self.sensor_left))
+    printer.debug('\t\t\t len(self.sensor_center) = ', len(self.sensor_center))
+    printer.debug('\t\t\t len(self.sensor_right)  = ', len(self.sensor_right))
+    printer.debug('\t\t\t self.x                  = ', self.x)
+    printer.debug('\t\t\t -------------- Append End --------------')
+
+
+  def plot_history(self, flag):
+    if( flag != 0 ):
+      fig, ax = self.road.show()
+      circle = plt.Circle((self.x, self.y), 5, color='black')
+      ax.add_patch(circle)
+      # v.24 - add standardized color -> left = green, rigth = orange
+      ax.plot(range(int(self.x), int(self.x+self.distance_center_from_wall)), np.repeat(self.y, self.distance_center_from_wall))
+      # ax.plot(range(int(self.x), int(self.x+self.distance_left_from_wall)), range(int(self.y), int(self.y+self.distance_left_from_wall)))
+      # ax.plot(range(int(self.x), int(self.x+self.distance_right_from_wall)), range(int(self.y), int(self.y-self.distance_right_from_wall), -1))
+      ax.vlines(x = self.x, ymin = self.y, ymax = self.road.wall_left[self.x])
+      ax.vlines(x = self.x, ymin = self.y, ymax = self.road.wall_right[self.x])
+      if( len(self.y_history) > 0 ):
+        ax.plot(self.y_history)
+        ax.set_title('#i = ' + str(self.x), fontsize=18, fontweight='bold')
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('history{0:04}'.format(self.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+      print(' --------------- plot --------------- ')
+
+
+# Bevezetésre került, elementi a képet
+  def save_plots(self):
+# y_distance vs y_distance_predicted
+    plt.figure(figsize=(12, 5)); plt.scatter(self.y_distance_real, self.y_distance_predicted)
+    plt.ylabel('y_distance_predicted'); plt.xlabel('y_distance_real');
+    plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+    plt.savefig('y_distance_vs_y_distance_predicted_{0:04}'.format(self.x)+'.png')
+    plt.close()
+
+
+# y_distance vs y_distance_predicted összes adaton
+    X_test_full = np.array([self.sensor_left, self.sensor_center, self.sensor_right]).T
+    _X_test_full = X_test_full
+#    predicted_test_full = self.regression.predict(_X_test_full)
+  # Lineáris regresszió helyett Neurális hálót használok
+    _X_test_full_scaled = self.x_minmaxscaler.transform(_X_test_full)
+    predicted_test_full = self.mlp.predict(_X_test_full_scaled)
+  # ToDo : itt még lehet, hogy kéne transzformálni y-t is és az egészet visszatranszformálni eredeti értékére + ellenőrizni, hogy tulajdonképpen amikor skálázom az y-t akkor mi alapján skálázok
+    predicted_test_full = self.y_minmaxscaler.inverse_transform(predicted_test_full.reshape(-1, 1))
+    _y_test_full = np.array([self.y_distance]).T
+    print(_y_test_full.shape)
+    print(predicted_test_full.shape)
+    plt.figure(figsize=(12, 5)); plt.scatter(_y_test_full, predicted_test_full, c='r');
+    plt.ylabel('y_distance_predicted'); plt.xlabel('y_distance_real');
+    plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+    plt.savefig('y_distance_vs_y_distance_predicted_all_{0:04}'.format(self.x)+'.png')
+    plt.close()
+
+
+# y_distance vs y_distance_predicted összes adaton színezve
+    _array_target = np.array([_y_test_full.ravel(), predicted_test_full.ravel(), np.arange(0, _y_test_full.shape[0], 1)]).T
+
+    plt.figure(figsize=(12, 5)); plt.scatter(_array_target[:,0], _array_target[:,1], c=_array_target[:,2]);
+    plt.ylabel('y_distance_predicted'); plt.xlabel('y_distance_real');
+    plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+    plt.savefig('y_distance_vs_y_distance_predicted_all_color_{0:04}'.format(self.x)+'.png')
+    plt.close()
+
+
+# y_distance vs y_distance_predicted összes adaton színezve vezető vonallal
+    plt.figure(figsize=(12, 5)); ax = plt.axes(); ax.scatter(_array_target[:,0], _array_target[:,1], c=_array_target[:,2])
+    ax.plot([-10, 2, 4, 10], [-10, 2, 4, 10]); ax.set_ylabel('y_distance_predicted'); ax.set_xlabel('y_distance_real');
+    ax.set_title('#i = ' + str(self.x), fontsize=18, fontweight='bold')
+    plt.savefig('y_distance_vs_y_distance_predicted_all_color_line_{0:04}'.format(self.x)+'.png')
+    plt.close()
+
+
+# Milyen kapcsolat van a bemenő adatok és a célváltozó között
+    plt.figure(figsize=(12, 5)); plt.scatter(self.sensor_left, self.y_distance, c=_array_target[:,2]);
+    plt.ylabel('self.y_distance'); plt.xlabel('self.sensor_left');
+    plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+    plt.savefig('sensor_left_vs_y_distance_{0:04}'.format(self.x)+'.png')
+    plt.close()
+
+
+# y_distance vs y_distance_predicted összes adaton színezve vezető vonallal
+    plt.figure(figsize=(12, 5)); ax = plt.axes(); ax.scatter(_array_target[:,0], _array_target[:,1], c=_array_target[:,2])
+    ax.plot([-10, 2, 4, 10], [-10, 2, 4, 10]); ax.set_ylabel('y_distance_predicted'); ax.set_xlabel('y_distance_real');
+    ax.set_ylim((-30, 30)); ax.set_xlim((-50, 50));
+    ax.set_title('#i = ' + str(self.x), fontsize=18, fontweight='bold')
+    plt.savefig('y_distance_vs_y_distance_predicted_all_color_line_fix_{0:04}'.format(self.x)+'.png')
+    plt.close()
+
+    print(' --- plots have been saved --- ')
+
+
+  def plot_investigation(self, _y_test_full, predicted_test_full, flag):
+
+    if( flag != 0 ):
+
+#      plt.figure(figsize=(12, 5)); plt.scatter(self.y_distance_real, self.y_distance_predicted);
+#      plt.ylabel('y_distance_predicted'); plt.xlabel('y_distance_real'); plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+#      plt.savefig('yDistance_vs_yDistance_predicted_typeAAAA_{0:04}'.format(self.x)+'.png');
+#      plt.show();
+#      plt.close();
+
+#      fig = plt.figure(figsize=(12, 5)); plt.scatter(self.y_distance_real, self.y_distance_predicted);
+#      plt.ylabel('y_distance_predicted'); plt.xlabel('y_distance_real'); plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+#      # white_patch = mpatches.Patch(color='white', label='number of observation = ' + str(len(self.y_distance_real))); plt.legend(handles=[white_patch])
+#      if( flag == 1 or flag == 3 ): plt.show();
+#      if( flag == 2 or flag == 3 ): fig.savefig('yDistance_vs_yDistance_predicted_typeCCCC_{0:04}'.format(self.x)+'.png'); plt.close(fig);
+
+      # Milyen kapcsolat van a középponttól vett távolság és ugyan ennek a változónak a neurális hálóval becsült értéke között (csak a tanítás után)
+      fig = plt.figure(figsize=(12, 5)); plt.scatter(self.y_distance_real, self.y_distance_predicted);
+      plt.ylabel('y_distance_predicted'); plt.xlabel('y_distance_real'); plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+      white_patch = mpatches.Patch(color='white', label='number of observation = ' + str(len(self.y_distance_real))); plt.legend(handles=[white_patch])
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('yDistance_vs_yDistance_predicted_type0_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+      # mmmmmmmmmmmmmmmm
+      # ez itt kulcsfontosságú lesz.
+      # az alap problémám az volt vele, hogy a függőleges tengelyen lévő adatok nem mormalizáltak
+      # a vizsszíintes tengelyen viszont a neurális háló utáni becsült értékek normalizált formában jelennek meg
+      # ezért amelett, hogy első körben meghagyom a fenti plotot kell csinálnom egy olyat amin a neurális háló által becsült értékek
+      # vissza vannak transzformálva
+
+      # 1)
+      #
+      # Ebben az a csalóka, hogy becsült értékeket eltároljuk
+      # itt viszont egy olyan visszatranszformációt hajtok végre rajtuk
+      # amiközben már változott a <<self.y_minmaxscaler>>
+      # tehát a visszatranszformáció igazából nem lesz helyes
+      #
+      # ahol y vissza van transformálva eredeti formájára
+      print('type(self.y_distance_predicted) = ', type(self.y_distance_predicted))
+      inv_y_distance_predicted = self.y_minmaxscaler.inverse_transform(self.y_distance_predicted)
+      # Milyen kapcsolat van a középponttól vett távolság és ugyan ennek a változónak a neurális hálóval becsült értéke között (csak a tanítás után)
+      fig = plt.figure(figsize=(12, 5)); plt.scatter(self.y_distance_real, inv_y_distance_predicted);
+      plt.ylabel('y_distance_predicted_inv (wrong)'); plt.xlabel('y_distance_real'); plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+      white_patch = mpatches.Patch(color='white', label='number of observation = ' + str(len(self.y_distance_real))); plt.legend(handles=[white_patch])
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('yDistance_vs_yDistance_predicted_typeWrong_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+      # 2)
+      #
+      # Elvileg ez a helyes - de a fentit meghagyom hogy lássam a különbséget
+      # ahol a <<y_distance_predicted>> változó előáll ott csinálok rajta gyorsan egy visszatranszformációt és azt is eltárolom egy listában
+      # majd pedig azt jelenítem itt meg (sokkal tisztább, nehogy már egy plot fügvényben legyen adat transzformáció)
+      #
+      # így ugyanis akkor áll elő a visszatranszformáció amikor még ugyan azokat az adatokat kapta meg a <<self.y_minmaxscaler>>
+      #
+      # Milyen kapcsolat van a középponttól vett távolság és ugyan ennek a változónak a neurális hálóval becsült értéke között (csak a tanítás után)
+      fig = plt.figure(figsize=(12, 5)); plt.scatter(self.y_distance_real, self.y_distance_predicted_inv);
+      plt.ylabel('y_distance_predicted_inv (correct)'); plt.xlabel('y_distance_real'); plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+      white_patch = mpatches.Patch(color='white', label='number of observation = ' + str(len(self.y_distance_real))); plt.legend(handles=[white_patch])
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('yDistance_vs_yDistance_predicted_typeCorrect_bw_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+      # X) ugyan ez csak az idő színnel kiegészítve
+      _time = np.array([np.arange(0, len(self.y_distance_predicted_inv), 1)]).T
+      fig = plt.figure(figsize=(12, 5)); plt.scatter(self.y_distance_real, self.y_distance_predicted_inv, c=_time);
+      plt.ylabel('y_distance_predicted_inv (correct)'); plt.xlabel('y_distance_real'); plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+      white_patch = mpatches.Patch(color='white', label='number of observation = ' + str(len(self.y_distance_real))); plt.legend(handles=[white_patch])
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('yDistance_vs_yDistance_predicted_typeCorrect_col_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+
+      # Milyen kapcsolat van a középponttól vett távolság és ugyan ennek a változónak a neurális hálóval becsült értéke között
+      fig = plt.figure(figsize=(12, 5)); plt.scatter(_y_test_full, predicted_test_full, c='r');
+      plt.ylabel('y_distance_predicted'); plt.xlabel('y_distance_real'); plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+      # plt.ylabel(r'$\int\ Y^2\ dt\ \ [V^2 s]$')
+      white_patch = mpatches.Patch(color='white', label='number of observation = ' + str(len(_y_test_full))); plt.legend(handles=[white_patch])
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('yDistance_vs_yDistance_predicted_type1_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+      _array_target = np.array([_y_test_full.ravel(), predicted_test_full.ravel(), np.arange(0, _y_test_full.shape[0], 1)]).T
+
+      # Milyen kapcsolat van a középponttól vett távolság és ugyan ennek a változónak a neurális hálóval becsült értéke között
+      fig = plt.figure(figsize=(12, 5)); plt.scatter(_array_target[:,0], _array_target[:,1], c=_array_target[:,2]);
+      plt.ylabel('y_distance_predicted'); plt.xlabel('y_distance_real'); plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+      white_patch = mpatches.Patch(color='white', label='number of observation = ' + str(len(_array_target[:,0]))); plt.legend(handles=[white_patch])
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('yDistance_vs_yDistance_predicted_type2_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+      # Milyen kapcsolat van a középponttól vett távolság és ugyan ennek a változónak a neurális hálóval becsült értéke között
+      fig = plt.figure(figsize=(12, 5)); ax = plt.axes(); ax.scatter(_array_target[:,0], _array_target[:,1], c=_array_target[:,2])
+      ax.plot([-10, 2, 4, 10], [-10, 2, 4, 10]); ax.set_ylabel('y_distance_predicted'); ax.set_xlabel('y_distance_real');
+      ax.set_title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+      white_patch = mpatches.Patch(color='white', label='number of observation = ' + str(len(_array_target[:,0]))); plt.legend(handles=[white_patch])
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('yDistance_vs_yDistance_predicted_type3_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+      # Milyen kapcsolat van a középponttól vett távolság és ugyan ennek a változónak a neurális hálóval becsült értéke között
+      fig = plt.figure(figsize=(12, 5)); ax = plt.axes(); ax.scatter(_array_target[:,0], _array_target[:,1], c=_array_target[:,2])
+      ax.plot([-10, 2, 4, 10], [-10, 2, 4, 10]); ax.set_ylabel('y_distance_predicted'); ax.set_xlabel('y_distance_real');
+      ax.set_ylim((-30, 30)); ax.set_xlim((-50, 50)); ax.set_title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+      white_patch = mpatches.Patch(color='white', label='number of observation = ' + str(len(_array_target[:,0]))); plt.legend(handles=[white_patch])
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('yDistance_vs_yDistance_predicted_type4_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+      # Milyen kapcsolat van a középponttól vett távolság és ugyan ennek a változónak a neurális hálóval becsült értéke között
+      fig = plt.figure(figsize=(12, 5)); ax = plt.axes(); ax.scatter(_array_target[:,0], _array_target[:,1], c=_array_target[:,2])
+      ax.plot([-20, 2, 4, 20], [-20, 2, 4, 20]); ax.set_ylabel('y_distance_predicted'); ax.set_xlabel('y_distance_real');
+      ax.set_ylim((-60, 60)); ax.set_xlim((-60, 60)); ax.set_title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+      white_patch = mpatches.Patch(color='white', label='number of observation = ' + str(len(_array_target[:,0]))); plt.legend(handles=[white_patch])
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('yDistance_vs_yDistance_predicted_type5_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+
+  def plot_investigation_senors(self, _y_test_full, predicted_test_full, flag):
+
+    if( flag != 0 ):
+
+      _array_target = np.array([_y_test_full.ravel(), predicted_test_full.ravel(), np.arange(0, _y_test_full.shape[0], 1)]).T
+
+      # Milyen kapcsolat van a bal oldali szenzor <<bemenő adat>> és a célváltozó között
+      fig = plt.figure(figsize=(12, 5)); plt.scatter(self.sensor_left, self.y_distance, c=_array_target[:,2]);
+      plt.ylabel('self.y_distance'); plt.xlabel('self.sensor_left'); plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+      white_patch = mpatches.Patch(color='white', label='number of observation = ' + str(len(self.sensor_left))); plt.legend(handles=[white_patch])
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('sensorLeft_vs_yDistance_v1_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+      printer.info('len(self.sensor_left) = ', len(self.sensor_left))
+      printer.info('len(self.y_distance) = ', len(self.y_distance))
+
+      # Milyen kapcsolat van a közéső szenzor <<bemenő adat>> és a célváltozó között
+      fig = plt.figure(figsize=(12, 5)); plt.scatter(self.sensor_center, self.y_distance, c=_array_target[:,2]);
+      plt.ylabel('self.y_distance'); plt.xlabel('self.sensor_center'); plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+      white_patch = mpatches.Patch(color='white', label='number of observation = ' + str(len(self.sensor_center))); plt.legend(handles=[white_patch])
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('sensorCenter_vs_yDistance_v1_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+      # Milyen kapcsolat van a jobb oldali szenzor <<bemenő adat>> és a célváltozó között
+      fig = plt.figure(figsize=(12, 5)); plt.scatter(self.sensor_right, self.y_distance, c=_array_target[:,2]);
+      plt.ylabel('self.y_distance'); plt.xlabel('self.sensor_right'); plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+      white_patch = mpatches.Patch(color='white', label='number of observation = ' + str(len(self.sensor_right))); plt.legend(handles=[white_patch])
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('sensorRight_vs_yDistance_v1_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+
+
+  def plot_before_after_sensor_estimation(self, _y_left, _predicted_left, y_delta, flag):
+
+    if( flag != 0 ):
+
+      # mennyire jó a left szenzor before after becslése
+      fig = plt.figure(figsize=(6, 6));
+      plt.scatter(_y_left, _predicted_left); plt.ylabel('_predicted_left'); plt.xlabel('_true_y_left');
+      plt.scatter(_y_left[-1], _predicted_left[-1], c='black', s=12);
+      # plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+      plt.title('#i = ' + str(self.x));
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('sensorLeftAfterScaled_vs_sensorLeftPredictedAfterScaled_v0_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+      # color -> y_delta
+      fig = plt.figure(figsize=(6, 7.5))
+      plt.scatter(_y_left, _predicted_left, c=y_delta); plt.ylabel('_predicted_left'); plt.xlabel('_true_y_left');
+      plt.title('#i = ' + str(self.x));
+      cmap = mpl.cm.viridis
+      # bounds = [-4, -3, -2, -1, 0, 1, 2, 3, 4]
+      bounds = np.arange(y_delta.min(), y_delta.max(), 1)
+      if( bounds.size < 3 ): bounds = [-1, 0, 1]
+      # print('bounds = ', bounds)
+      norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+      plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+             orientation='horizontal',
+             label='Elmozdítás mértéke');
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('sensorLeftAfterScaled_vs_sensorLeftPredictedAfterScaled_v1_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+      # size  -> y_delta legyen már rajta valami méretjelző ábra
+      fig = plt.figure(figsize=(6, 6))
+      plt.scatter(_y_left, _predicted_left, s=(3*y_delta)+10); plt.ylabel('_predicted_left'); plt.xlabel('_true_y_left');
+      plt.title('#i = ' + str(self.x));
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('sensorLeftAfterScaled_vs_sensorLeftPredictedAfterScaled_v2_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+      # nem biztos, hogy kell mellé az idő is, de elvileg az még hiányzik
+      _array_target = np.array([_y_left.ravel(), _predicted_left.ravel(), y_delta.ravel(), np.arange(0, y_delta.shape[0], 1)]).T
+
+      # [[_array_target]] [_yleft, _predicted_left, y_delta, time]
+      # color -> time
+      fig = plt.figure(figsize=(7.5, 6))
+      plt.scatter(_array_target[:,0], _array_target[:,1], c=_array_target[:,3]); plt.ylabel('_predicted_left'); plt.xlabel('_true_y_left');
+      plt.title('#i = ' + str(self.x));
+      plt.colorbar(orientation='vertical', label='Time');
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('sensorLeftAfterScaled_vs_sensorLeftPredictedAfterScaled_v3_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+      # [[_array_target]] [_yleft, _predicted_left, y_delta, time]
+      # color -> time, size = y_delta
+      fig = plt.figure(figsize=(7.5, 6))
+      plt.scatter(_array_target[:,0], _array_target[:,1], c=_array_target[:,3], s=_array_target[:,2]+10); plt.ylabel('_predicted_left'); plt.xlabel('_true_y_left');
+      plt.title('#i = ' + str(self.x));
+      plt.colorbar(orientation='vertical', label='Time');
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('sensorLeftAfterScaled_vs_sensorLeftPredictedAfterScaled_v4_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+      # [[_array_target]] [_yleft, _predicted_left, y_delta, time]
+      # color -> time, size = y_delta
+      fig = plt.figure(figsize=(6, 7.5))
+      plt.scatter(_array_target[:,0], _array_target[:,1], c=_array_target[:,3], s=_array_target[:,2]+10); plt.ylabel('_predicted_left'); plt.xlabel('_true_y_left');
+      plt.title('#i = ' + str(self.x));
+      plt.colorbar(orientation='horizontal', label='Time');
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('sensorLeftAfterScaled_vs_sensorLeftPredictedAfterScaled_v5_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+
+  def plot_before_after_sensor_estimation_in_one_chart(self, _y_sensor, _predicted_sensor, y_delta, name, flag):
+
+    if( flag != 0 ):
+
+      fileName = 'sensor' + name.capitalize() + 'AfterScaled_vs_sensor' + name.capitalize() + 'PredictedAfterScaled_S1'
+
+      fig = plt.figure(figsize=(18, 7.5));
+      # plt.figure(figsize=(18, 7.5));
+      
+      # color -> y_delta
+      plt.subplot(1, 3, 1)
+      plt.scatter(_y_sensor, _predicted_sensor, c=y_delta); plt.ylabel('_predicted_' + name); plt.xlabel('_true_' + name);
+      plt.title('#i = ' + str(self.x));
+      cmap = mpl.cm.viridis
+      # bounds = [-4, -3, -2, -1, 0, 1, 2, 3, 4]
+      bounds = np.arange(y_delta.min(), y_delta.max(), 1)
+      if( bounds.size < 3 ): bounds = [-1, 0, 1]
+      # print('bounds = ', bounds)
+      norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+      plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+             orientation='horizontal',
+             label='Elmozdítás mértéke');
+
+      # nem biztos, hogy kell mellé az idő is, de elvileg az még hiányzik
+      _array_target = np.array([_y_sensor.ravel(), _predicted_sensor.ravel(), y_delta.ravel(), np.arange(0, y_delta.shape[0], 1)]).T
+
+      # [[_array_target]] [_y_sensor, _predicted_sensor, y_delta, time] pl [_y_left, _predicted_left, y_delta, time]
+      # color -> time
+      plt.subplot(1, 3, 2)
+      plt.scatter(_array_target[:,0], _array_target[:,1], c=_array_target[:,3]); plt.ylabel('_predicted_' + name); plt.xlabel('_true_' + name);
+      plt.title('#i = ' + str(self.x));
+      plt.colorbar(orientation='horizontal', label='Time');
+
+      # [[_array_target]] [_y_sensor, _predicted_sensor, y_delta, time] pl [_y_left, _predicted_left, y_delta, time]
+      # color -> time, size = y_delta
+      plt.subplot(1, 3, 3)
+      plt.scatter(_array_target[:,0], _array_target[:,1], c=_array_target[:,3], s=_array_target[:,2]+10); plt.ylabel('_predicted_' + name); plt.xlabel('_true_' + name);
+      plt.title('#i = ' + str(self.x));
+      plt.colorbar(orientation='horizontal', label='Time');
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+
+  def plot_before_after_sensor_values(self, _array_target, name, flag):
+
+    if( flag != 0 ):
+
+      fileName = 'sensor' + name.capitalize() + 'BeforeScaled_vs_sensor' + name.capitalize() + 'AfterScaled'
+
+      # Mi a kapcsolat a before after sesoros adatok között [[ez nem a becslés, hanem a nyers adatok]]
+      # _array_target = [[before_array[:,1](sensor), after_array[:,1](sensor), y_delta{action}, time]]
+      print(' ---------- plot scatter plot for before after value with time {color} 2 ----------------')
+
+      fig = plt.figure(figsize=(6.25, 5));
+      plt.scatter(_array_target[:,0], _array_target[:,1], c=_array_target[:,3]);
+      plt.ylabel('after'); plt.xlabel('before');
+      plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+      __x_max = _array_target[:,0].max();
+      __x_min = _array_target[:,0].min();
+      __y_max = _array_target[:,1].max();
+      __y_min = _array_target[:,1].min();
+      __x_cen = __x_max + ((__x_max - __x_min) * 0.1);
+      __y_cen = (__y_max + __y_min)/2;
+      plt.text(__x_cen, __y_cen, name, rotation='vertical', horizontalalignment='center', verticalalignment='center');
+      white_patch = mpatches.Patch(color='white', label='number of observation = ' + str(len(_array_target[:,0]))); plt.legend(handles=[white_patch])
+      plt.colorbar(orientation='vertical', label='time');
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_v1_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+      # Mi a kapcsolat a before after sesoros adatok között [[ez nem a becslés, hanem a nyers adatok]]
+      print(' ---------- plot scatter plot for before after value with time {color} and action {size} 2 ----------------')
+      fig = plt.figure(figsize=(6.25, 5));
+      size = _array_target[:,2]
+      size = np.abs(size) * 4 + 3
+      plt.scatter(_array_target[:,0], _array_target[:,1], c=_array_target[:,3], s=size);
+      plt.ylabel('after'); plt.xlabel('before');
+      plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+      plt.text(__x_cen, __y_cen, name, rotation='vertical', horizontalalignment='center', verticalalignment='center');
+      white_patch = mpatches.Patch(color='white', label='number of observation = ' + str(len(_array_target[:,0]))); plt.legend(handles=[white_patch])
+      plt.colorbar(orientation='vertical', label='time');
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_v2_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+      # Mi a kapcsolat a before after sesoros adatok között [[ez nem a becslés, hanem a nyers adatok]]
+      print(' ---------- plot scatter plot for before after value with time and action {color} 2 ----------------')
+      fig = plt.figure(figsize=(6.25, 5));
+      plt.scatter(_array_target[:,0], _array_target[:,1], c=_array_target[:,2]);
+      plt.ylabel('after'); plt.xlabel('before');
+      plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+      plt.text(__x_cen, __y_cen, name, rotation='vertical', horizontalalignment='center', verticalalignment='center');
+      white_patch = mpatches.Patch(color='white', label='number of observation = ' + str(len(_array_target[:,0]))); plt.legend(handles=[white_patch])
+      cmap = mpl.cm.viridis
+      bounds = np.arange(_array_target[:,2].min(), _array_target[:,2].max() + 1, 1)
+      if( bounds.size < 3 ): bounds = [-1, 0, 1]
+      # bounds = [-7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7]
+      # print('bounds = ', bounds)
+      norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+      plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+             orientation='vertical',
+             label='Elmozdítás mértéke');
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_v3_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
+
+  def plot_state_space_discover(self, flag):
+
+    # Az adatok nem a before afterből kellenek nekünk, hanem
+    # self.y_distance
+    # self.sensor_left
+    # self.sensor_center
+    # self.sensor_right
+
+    # time -> create
+
+    if( flag != 0 ):
+
+      fileName = 'state_space_discover'
+
+      szin = np.arange(len(self.sensor_right))
+
+      fig = plt.figure(figsize=(10,10))
+      ax = fig.add_subplot(projection='3d')
+      ax.scatter(self.sensor_left, self.sensor_right, self.sensor_center, c=szin)
+      ax.set_xlabel('sensor left')
+      ax.set_ylabel('sensor right')
+      ax.set_zlabel('sensor center')
+      ax.invert_xaxis()
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_LeftRightCenter_3D_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+      fig = plt.figure(figsize=(10,10))
+      ax = fig.add_subplot(projection='3d')
+      ax.scatter(self.sensor_left, self.sensor_right, self.y_distance, c=szin)
+      ax.set_xlabel('sensor left')
+      ax.set_ylabel('sensor right')
+      ax.set_zlabel('y_distance')
+      # ax.invert_xaxis()
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_LeftRightYDistance_3D_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+      fig = plt.figure(figsize=(10,10))
+      ax = fig.add_subplot(projection='3d')
+      ax.scatter(self.sensor_left, self.sensor_right, self.y_distance, c=szin)
+      ax.set_xlabel('sensor left')
+      ax.set_ylabel('sensor right')
+      ax.set_zlabel('y_distance')
+      # ax.invert_xaxis()
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_LeftRightYDistance_3D_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+      fig = plt.figure(figsize=(10,10))
+      ax = fig.add_subplot(projection='3d')
+      plot = ax.scatter(self.sensor_left, self.sensor_right, self.y_distance, c=szin, cmap='winter')
+      ax.set_xlabel('sensor left')
+      ax.set_ylabel('sensor right')
+      ax.set_zlabel('y_distance')
+      ax.invert_xaxis()
+      # Get rid of colored axes planes
+      # First remove fill
+      ax.xaxis.pane.fill = False
+      ax.yaxis.pane.fill = False
+      ax.zaxis.pane.fill = False
+      # Now set color to white (or whatever is "invisible")
+      ax.xaxis.pane.set_edgecolor('w')
+      ax.yaxis.pane.set_edgecolor('w')
+      ax.zaxis.pane.set_edgecolor('w')
+      # Bonus: To get rid of the grid as well:
+      ax.grid(False)
+      # Colorbar:
+      # Add colorbar
+      cbar = fig.colorbar(plot, ax=ax, shrink=0.6)
+      # cbar.set_ticks([0, 50, 100, 150, 200])
+      # cbar.set_ticklabels(['0', '50', '100', '150', '200 nm'])
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_LeftRightYDistance_WhitoutBorder_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+      fig = plt.figure(figsize=(7.5, 6))
+      plt.scatter(self.sensor_left, self.sensor_right, c=self.y_distance)
+      plt.ylabel('sensor_right'); plt.xlabel('sensor_left');
+      plt.colorbar(orientation='vertical', label='y_distance');
+      plt.title('#i = ' + str(self.x))
+      # plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_LeftRightYDistance_2D_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+
+
+  def plot_trace(self, freq, flag):
+
+    if( flag != 0 ):
+
+      if( self.x % freq == 0 ):
+
+        if( len(self.y_history) > 0 ):
+
+          fileName = 'trace'
+          fig, ax = self.road.show()
+          circle = plt.Circle((self.x, self.y), 5, color='black')
+          ax.add_patch(circle)
+          ax.plot(range(int(self.x), int(self.x+self.distance_center_from_wall)), np.repeat(self.y, self.distance_center_from_wall))
+          # ax.plot(range(int(self.x), int(self.x+self.distance_left_from_wall)), range(int(self.y), int(self.y+self.distance_left_from_wall)), c='green')
+          ax.plot(range(int(self.x), int(self.x+self.distance_left_from_wall)), range(int(self.y), int(self.y+self.distance_left_from_wall)))
+          # ax.plot(range(int(self.x), int(self.x+self.distance_right_from_wall)), range(int(self.y), int(self.y-self.distance_right_from_wall), -1), c='orange')
+          ax.plot(range(int(self.x), int(self.x+self.distance_right_from_wall)), range(int(self.y), int(self.y-self.distance_right_from_wall), -1))
+          y_history_array = np.array(self.y_history)
+          y_history_diff = np.diff(y_history_array, n=1, axis=-1, prepend=0)
+          y_history_diff[0] = 0
+          y_move = np.zeros(self.road.distance.shape[0])
+          y_move[0:y_history_diff.shape[0]] = y_history_diff
+          x = np.arange(self.road.distance.shape[0])
+          ax.plot(self.road.wall_center[0] + y_move * 10)
+          ax.plot(self.y_history)
+          plt.title('#i = ' + str(self.x))
+          # plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+          if( flag == 1 or flag == 3 ): plt.show();
+          if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_{0:04}'.format(self.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+    if( flag != 0 ):
+
+      if( self.x % freq == 0 ):
+
+        if( len(self.y_history) > 0 ):
+
+          fileName = 'y_move'
+          fig = plt.figure(figsize=(10.5, 6))
+          y_move = np.diff(np.array(self.y_history), 1, -1, prepend=0)
+          y_move[0] = 0
+          plt.plot(y_move)
+          plt.hlines(0, 0, 100)
+          plt.title('#i = ' + str(self.x))
+          # plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
+          if( flag == 1 or flag == 3 ): plt.show();
+          if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_{0:04}'.format(self.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+
+
+
+
+
+
+
+
+
+
+  def run(self, run_length, silent = False):
+    for i in range(0, run_length, 1):
+      printer.util('# A run ciklus eleje --------------------------------------------------------------------------------------------------------------------')
+      printer.util('# i = ', i)
+      _summary_mlp_prediction_was_taken = 0
+      _summary_mlp_fit_was_taken = 0
+      _summary_mesterseges_mozgatas = 0
+      _summary_action_was_taken = 0
+
+# Beállítja az x értékét az éppen aktuális ciklusváltozó értékére
+      self.x = i
+# Kiszámoja a szenzoroknak a faltól mért távolságát
+      self.calculate_distances()
+# Eltárolja a kiszámolt értékeket
+      self.append()
+
+# Csak néha plottoljunk ne mindíg, egyébként a függvény is megkapja hogy mikor plottoljon
+      if ( i % self.plot_frequency == 0 ):
+        
+        # Show history plot - Save history plot
+        self.plot_history(self.plot_history_flag)
+        
+        # New
+        self.plot_trace(self.plot_frequency, self.plot_trace_flag)
+        print(' --------------- plot trace --------------- ')
+
+
+
+
+
+# Itt kezdődik a lényeg
+      if ( i >= 0 ):
+
+        # --------------------------------------- A NEURÁLIS HÁLÓ TANÍTÁSA (1) ---------------------------------------
+        
+        if ( i % 3 == 0 and i >= 12 ):
+
+          printer.info('------------------------------ IF i % 3 == 0 ------------------------------')
+          printer.info('# i = ', i)
+          printer.util('# i = ', i)
+          printer.info('# 1. számú tanulás. Mi a kapcsolat a szenzoros adatok és aközött, hogy az út melyik részén van az autó (micadoban ez az NN)')
+          X = np.array([self.sensor_left, self.sensor_center, self.sensor_right]).T
+          y = np.array([self.y_distance]).T
+          printer.debug('X.shape = ', X.shape)
+          printer.debug('y.shape = ', y.shape)
+          printer.debug('X       = ', X)
+          printer.debug('y       = ', y)
+          
+          _summary_mlp_fit_was_taken = 1
+# Lineáris regresszió helyett Neurális hálót használok
+          self.x_minmaxscaler.fit(X)
+          self.y_minmaxscaler.fit(y)
+          X_scaled = self.x_minmaxscaler.transform(X)
+          y_scaled = self.y_minmaxscaler.transform(y)
+          printer.debug('---------------------')
+          printer.debug('X.max = ', X.max())
+          printer.debug('X.min = ', X.min())
+          printer.debug('y.max = ', y.max())
+          printer.debug('y.min = ', y.min())
+          printer.debug('---------------------')
+          printer.debug('X_scaled.shape = ', X_scaled.shape)
+          printer.debug('y_scaled.shape = ', y_scaled.shape)
+          printer.info('---------------------')
+          printer.info('X_scaled.max = ', X_scaled.max())
+          printer.info('X_scaled.min = ', X_scaled.min())
+          printer.info('y_scaled.max = ', y_scaled.max())
+          printer.info('y_scaled.min = ', y_scaled.min())
+          printer.info('---------------------')
+          self.mlp.fit(X_scaled, y_scaled)
+# hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+# Ha olyanunk van plottoljunk
+          self.plotter.plot_mlp(mlp = self.mlp ,flag = self.plotter_mlp_flag)
+
+
+        # --------------------------------------- A NEURÁLIS HÁLÓ MINŐSÉGÉNEK VISSZAMÉRÉSE, TESZTELÉSE (2) ---------------------------------------
+
+        if( i % 3 == 1 and i >= 22 ):
+
+          printer.info('------------------------------ IF i % 3 == 1 ------------------------------')
+          printer.info('# i = ', i)
+          printer.info('# 2. az 1. pontban megtanult modell alapján teszünk egy becslést - tulajdonképpen ezzel mérem az 1. modell jóságát, ez a lépés ezt szolgálja')
+          X_test = np.array([self.sensor_left, self.sensor_center, self.sensor_right]).T
+          _X_test = np.array([X_test[-1,:].reshape(-1,1)])
+          _X_test = np.array([X_test[-1,:]])
+          printer.info('actual _X_test = ', _X_test)
+
+          _X_test_scaled = self.x_minmaxscaler.transform(_X_test)
+          predicted_test = self.mlp.predict(_X_test_scaled)
+# ToDo : Fontos lenne visszatranszformálni a predicted_test értéket mielőtt belekerül az archivumba
+          _summary_mlp_prediction_was_taken = 1
+          self.y_distance_real.append(self.y_distance[-1])
+          self.y_distance_predicted.append(predicted_test)
+# ToDo : Ellenőrizni, hogy közben nem változott-e a <<self.y_minmaxscaler>>
+          predicted_test_inv = self.y_minmaxscaler.inverse_transform(predicted_test.reshape(-1, 1)).flatten()
+          self.y_distance_predicted_inv.append(predicted_test_inv)
+
+          printer.investigation('actual predicted_test = ', predicted_test)
+          printer.investigation('actual self.y_distance[-1] = ', self.y_distance[-1])
+          printer.investigation('actual predicted_test_inv = ', predicted_test_inv)
+          printer.info('len(self.y_distance_real)      = ', len(self.y_distance_real))
+          printer.investigation('len(self.y_distance_predicted) = ', len(self.y_distance_predicted))
+          printer.investigation('len(self.y_distance_predicted_inv) = ', len(self.y_distance_predicted_inv))
+          printer.debug('self.y_distance_real = \n', self.y_distance_real)
+          printer.debug('self.y_distance_predicted = \n', self.y_distance_predicted)
+          printer.debug('self.y_distance_perdicted_inv = \n', self.y_distance_predicted_inv)
+
+
+# Plot : Minden 32-ik lépésbén kiplottoljuk a Neurális háló álltal előrejelzett és a tényleges adatok közötti kapcsolatot
+# Ezzel a felétellel az a baj, hogy benne van egy másik if-ben ami azt mojda ki, hogyha i % 3 == 1
+# Vagyi nem minden 32-ik lépésben plottolunk
+          if( i % self.plot_detailed_frequency == 0 ):
+            
+            # korábban csak azokat az adatokat plottoltam amik a tanulás után lettek visszamérve, de nézzük meg a teljes adatsoron
+            X_test_full = np.array([self.sensor_left, self.sensor_center, self.sensor_right]).T
+            _X_test_full = X_test_full
+            _X_test_full_scaled = self.x_minmaxscaler.transform(_X_test_full)
+            predicted_test_full = self.mlp.predict(_X_test_full_scaled)
+# ToDo : itt még lehet, hogy kéne transzformálni y-t is és az egészet visszatranszformálni eredeti értékére + ellenőrizni, hogy tulajdonképpen amikor skálázom az y-t akkor mi alapján skálázok
+            predicted_test_full = self.y_minmaxscaler.inverse_transform(predicted_test_full.reshape(-1, 1))
+            _y_test_full = np.array([self.y_distance]).T
+            printer.info('_y_test_full.shape = ', _y_test_full.shape)
+            printer.info('predicted_test_full.shape = ', predicted_test_full.shape)
+
+
+# Plot
+# (flag 0 = disable, flag 1 = plot, 2 = save, 3 = both)
+            # Vizsgáljuk meg, hogy milyen kapcsolat van a becsült és a valós érték között
+            self.plot_investigation(_y_test_full, predicted_test_full, self.plot_investigation_flag)
+
+            # Illetve, hogy miyen kapcsolat van a szenzorok értékei és a becsült változó között (flag 0 = disable, flag 1 = plot, 2 = save, 3 = both)
+            self.plot_investigation_senors(_y_test_full, predicted_test_full, self.plot_investigation_flag)
+
+
+
+        # ----------------------------------------- MESTERSÉGES MOZGATÁS (3) -----------------------------------------
+
+        # most jön az, hogy véletlenszerűen kell egyet ugrania fel, vagy le
+        # ez felel meg a before after dologonak
+        # az így létrejött adatokat is el kell tárolni úgy mint
+        # mi volt a szezoros adat before
+        # mi lett a szenzoros adat after
+        # mi volt az y before, mi lett az y after
+        # mivel mindíg egyet fogunk csak lépni, ezért a dif mindíg egy lesz
+        # de ezt számítani kell, mivel a későbbiek folyamán lehet, hogy többet is fog lépni
+
+        if( i % 3 == 2 ):
+
+          printer.info('------------------------------ IF i % 3 == 2 ------------------------------')
+          printer.info('# i = ', i)
+          printer.info('# 3. véletlenszerűen változtatok az autó pozicióján -> ebből állnak elő a before after adatok')
+
+          printer.info('self.y before move = ', self.y)
+
+          _summary_mesterseges_mozgatas = 1
+          
+          if( self.mesterseges_coutner == 0 ):                             # Első lépésben fel
+            self.before.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
+            self.y = self.y + 1
+            printer.info('artificial move -> up first')
+            self.calculate_distances()
+            self.after.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
+            self.mesterseges_coutner = 1
+
+          elif( self.mesterseges_coutner == 1 ):                           # Második lépésben le
+            self.before.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
+            self.y = self.y - 1
+            printer.info('artificial move -> down first')
+            self.calculate_distances()
+            self.after.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
+            self.mesterseges_coutner = 2
+
+          elif( self.mesterseges_coutner == 2 ):                           # Harmadik lépésben le
+            self.before.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
+            self.y = self.y - 1
+            printer.info('artificial move -> down second')
+            self.calculate_distances()
+            self.after.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
+            self.mesterseges_coutner = 3
+
+          elif( self.mesterseges_coutner == 3 ):                           # Negyedik lépésben fel
+            self.before.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
+            self.y = self.y + 1
+            printer.info('artificial move -> up second')
+            self.calculate_distances()
+            self.after.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
+            self.mesterseges_coutner = 0
+
+          else:
+            printer.info('semmi\n\n\n\n')
+
+          printer.info('self.y after move = ', self.y)
+
+
+        # ------------------------------------------------ ACTION (X) ------------------------------------------------
+
+        # itt van egy érdekesség amit csak magamnak írok fel ezen a ponton lépünk ki a három if ágból - if( i % 3 == _ )
+        # ez azért fontos, mert ami itt következik az mindíg lefut
+        # akár volt neurális háló tanítás
+        # akár volt neurális háló predikció visszamérése
+        # akár volt mesterséges mozgatás
+
+        # Felmerül a kérdés de csak felmerül, hogy nem lehet-e az, hogy ezt csak akkor kéne elvégezni amikor nincs neurális
+        # háló tanítás és nincs mesterséges mozgatás sem. Ezt csak egy kísérlet ereéig ki kéne próbálni (if i % 3 == 1) ->
+        # vagyis amikor az nn predikció mérése történik
+
+
+        # version 20. -> if( i % 3 == 0 ); version 22. -> if( i % 3 == 1 )
+
+        # atcion változó fogja tárolni, hogy mi lenne az optimizer szerint a helyes döntés -> fontos, hogy ezt a döntést meg is lépi
+        action = 0
+        if( i % 3 == 0 ):
+
+          # ez az ág csak akkor fut le, ha már van elég before-after adatunk,
+          # amíg nincs, addig nem csinál semmilyen kiértékelést, nem hoz döntést
+
+          if( len(self.before) > 9 ):
+
+            printer.info('------------------------------ IF len(self.before) > 9 ------------------------------')
+            printer.info('\n')
+            printer.info('  Ha már van elég before after adatunk')
+            printer.info('# 3. Tanulás itt kerül kiszámításra a lineáris regresszió minden egyes metrikára')
+            # minden egyes szezor adatára el kell készítenünk azt a lineráis regressziós modelt ami megmondja, hogy mi lenne a szenzor értéke, ha 1, 2, 3, ... n lépéssel elvinnénk a kocsit
+
+            # oké megvan a before és megvan az after (self.y, left, center, right)
+            # a before és az after array egyébként úgy épül fel, hogy a sorok a megfigyelések
+            # 0-ik oszlop !!! Nem az ót közepétől vett eltérés mértéke, hanem az Y tengelyen mért távolság !!!
+            # 1    oszlop sensor_left
+            # 2    oszlop sensor_center
+            # 3    oszlop sensor_right
+            before_array = np.array(self.before)
+            after_array  = np.array(self.after)
+            y_delta = after_array[:,0] - before_array[:,0]
+            delta_array = after_array - before_array
+            printer.ba('\n----------------------- Before After Dataset Monitoring Block -----------------------')
+            printer.ba('y_delta = ', y_delta)
+            printer.ba('before_array.shape = ', before_array.shape)
+            printer.ba('after_array.shape  = ', after_array.shape)
+            printer.ba('self.before = \n', self.before)
+            printer.ba('self.after  = \n', self.after)
+            printer.ba('delta_array = \n', delta_array)
+            printer.ba('-----------------------------------------------------------------------------\n')
+
+            # képlet szerint sensor_after' = w0 + w1 * sensor_before + w2 * delta_y
+  # ToDo a helyes képlet nem ez --------> ki kell javítani
+            # a sensor_after és a sensor_befor érték világs
+            # a delta_y azt fejezi ki, hogy mi volt az autó Y tengelyen mért távolságában megvigyelhető elétrés
+            # << a skálázási logikában ez a fel le skálázás mértéke >>
+            #
+            # magyarul azt akarjuk megbecsülni <<sesor_after>> hogy hogyan állítható elő ez az értéke a sensor_before <<jelenlegi,
+            # vagy elmozdítás elötti értékéből>> és az Y tengelyen vett elmozdulás mértékéből <<delta_y>>
+            # [[Gondolom világos de azért leírom, hogy nem az autó Y tengelyen vett poziciójábaól]]
+            # [[Hanem abból, hogy mekkora volt az elmozdulása az Y tengelyen]]
+
+            printer.lr('# Linear Regression Learning --------------------------------------------------------------------------------------')
+            printer.lr('\t\t # Linear Regression Training Results -------------------------------------------------------------------------')
+
+  # -------------- left
+            #> _X_left tehát a bemenet a left sensor before értéke és az y tengelyen vett elmozdulás mértéke
+            #> _X_left = left és delta_y
+            _X_left = np.array([before_array[:,1], delta_array[:,0]]).T
+            #> _y_left a becsült érték pedig a left sesor elmozdulás után mért értéke
+            _y_left = after = after_array[:,1].reshape(-1, 1)
+# hhh            regression_left = self.regression_left
+            self.regression_left.fit(_X_left, _y_left)
+            # print('\t\t _X_left <<sensor before, y elmozdulás mértéke>>   = \n', _X_left)
+            # print('\t\t _y_left <<sensor after az érték amit becsülnünk>> = \n', _y_left)
+            printer.lr('\t\t ------------------------------- valyon mennyire jó a left   metrikának a becslése -----------------------------')
+# hhh            printer.lr('\t\t regression_left.coef_ = ', regression_left.coef_)
+            printer.lr('\t\t self.regression_left.coef_ = ', self.regression_left.coef_)
+# hhh            printer.lr('\t\t regression_left.intercept_ = ', regression_left.intercept_)
+            printer.lr('\t\t self.regression_left.intercept_ = ', self.regression_left.intercept_)
+            #> _predicted_left lesz a bemenete a neurális hálónak
+            #  nem a mostani formájában mert itt a tényleges le fel skálázási adatok alapján tanítottuk meg a lineáris regressziós modelt
+            #  arra, hogy milyen összefüggés van a (1) skálázás elötti szenzoros adat értéke (2) az elmozdulás mértéke (3) és az így kapott
+            #  új szenzoros érték között.
+            #
+            #  Miután előállt a modellünk <<regression_left>> ezzel fogjuk kiszámolni, hogy mi lenne a szenzor új értéke {+1, +2, +3, ..}
+            #  elmozdítás esetén. -> Majd az így kapott értékeket pakoljuk be egyenként a neurális hálóba és számojuk ki, hogy mi lenne
+            #  az így kapott Y tengelyen mért érték -> Majd pedig ennek alapján választjuk ki azt, amelyikkel a legközelebb tudunk
+            #  jutni a kívánt célhoz
+
+# hhh            _predicted_left = regression_left.predict(_X_left)
+            _predicted_left = self.regression_left.predict(_X_left)
+
+            #> Tehát a fenti <<_predicted_left>> változót csak azért hoztam létre, hogy vizsgálni tudjam, mennyire jól ragadta meg
+            #  before<->after kapcsolatot leíró modell a kapcsolatot és mennyire jól képes becsülni az új értéket.
+            #  [[tulajdonképpen ez itt egy dummy változó amit csak analízisre használok]]
+
+            # mennyire jó a left szenzor before after becslése
+
+            # Plot
+            # (flag 1 = plot, 2 = save, 3 = both)
+            # Vizsgáljuk meg, hogy milyen kapcsolat van a [...]
+            # Ez egy nagyon érdekes Grafikon
+            # Még nekem is barátkoznom kell az értelmezésével
+            # Ezért erről később írok
+
+            # Az elsőt kikapcsoltam -> ez a plottolás mindet chartot egymás alá tesz ki lesz vezetve van helyette új (lásd követ.)
+            # self.plot_before_after_sensor_estimation(_y_left, _predicted_left, y_delta, plot_before_after_sensor_estimation_flag)
+
+            self.plot_before_after_sensor_estimation_in_one_chart(_y_left, _predicted_left, y_delta, 'left', self.plot_before_after_sensor_estimation_flag)
+
+            printer.ba('_X_left << az a változó csomag ami adott szenzorra a sensor before értékét és az Y tengelyen vett elmozdulás mértékét tartalmazza >> = \n', _X_left)
+            printer.ba('_y_left << az a változó vector ami egy elmozdítás után mért szenzor értékét tartalmazza [ilyere változott] az elmozdítás után>> = \n', _y_left)
+            printer.ba('_predicted_left << az a változó vector amit az _X_left becsült _y_left értékeire [ez maga a becslést tartalmazó adatsor]>> = \n', _predicted_left)
+            
+            # Arra vagyok kiváncsi, hogy melyik az _X_left-ben a változás mértéke
+            printer.ba('_X_left.shape << ellenőrzés arra, hogy a két adacsomag hossaz megegyezik-e >>         = ', _X_left.shape)
+            printer.ba('_predicted_left.shape << ellenőrzés arra, hogy a két adacsomag hossaz megegyezik-e >> = ', _predicted_left.shape)
+
+            # Eddig egy konkrét sensor skálázás utáni értéke és skálázás utáni értéke becslés alapján közötti kapcsolatot vizsgáltunk
+            # Most vizsgáljuk meg csak a maga egyszerűsgében azt, hogy milyen kapcsolat van a skálás elötti valós és a skálázás utáni valós érté között
+            # kiplottolom a before after adatokat egy konkrét szenzor értékeire
+
+            # [[ez a változó is csak azért kell, hogy lássam hogy áll az aktuális sensor before after érteke]]
+            # [[sensor link]]
+            # [[before_array[:,1](left), after_array[:,1](left), y_delta{action}, time]]
+            _array_target_left = np.array([before_array[:,1].ravel(), after_array[:,1].ravel(), y_delta.ravel(), np.arange(0, after_array.shape[0], 1)]).T
+
+            # Plot
+            # (flag 0 = disable, 1 = plot, 2 = save, 3 = both)
+            # Vizsgáljuk meg, hogy milyen kapcsolat van a [...]
+            # bal szenzor skálázás elötti és a bal szenzor skálázás utáni értéke között
+            self.plot_before_after_sensor_values(_array_target_left, 'left', self.plot_before_after_sensor_values_flag)
+            
+            printer.ba('before_array.shape = ', before_array[:,1].shape)
+            printer.ba('after_array.shape  = ', after_array[:,1].shape)
+            printer.ba('array_target_left  = \n', _array_target_left)
+
+
+  # -------------- center
+            _X_center = np.array([before_array[:,2], delta_array[:,0]]).T # center és delta_y (before)
+            _y_center = after_array[:,2].reshape(-1, 1)                   # center (after)
+            regression_center = self.regression_center
+            regression_center.fit(_X_center, _y_center)
+            printer.ba('\t\t ------------------------------- valyon mennyire jó a center metrikának a becslése -----------------------------')
+            printer.ba('\t\t regression_center.coef_ = ', regression_center.coef_)
+            printer.ba('\t\t regression_center.intercept_', regression_center.intercept_)
+            _predicted_center = regression_center.predict(_X_center)
+#            plt.scatter(_y_center, _predicted_center)
+#            plt.ylabel('_predicted_center')
+#            plt.xlabel('_true_y_center')
+#            plt.show()
+            # kiplottolom a before after adatokat egy konkrét szenzor értékeire
+#            plt.scatter(before_array[:,2], after_array[:,2], c='black')
+#            plt.ylabel('after')
+#            plt.xlabel('before')
+#            plt.show()
+            # ezt felváltottam az alábbi három sorral
+            # Plot
+            # (flag 0 = disable, 1 = plot, 2 = save, 3 = both)
+            self.plot_before_after_sensor_estimation_in_one_chart(_y_center, _predicted_center, y_delta, 'center', self.plot_before_after_sensor_estimation_flag)
+            # [[before_array[:,2](center), after_array[:,2](center), y_delta{action}, time]]
+            _array_target_center = np.array([before_array[:,2].ravel(), after_array[:,2].ravel(), y_delta.ravel(), np.arange(0, after_array.shape[0], 1)]).T
+            self.plot_before_after_sensor_values(_array_target_center, 'center', self.plot_before_after_sensor_values_flag)
+
+
+  # -------------- right
+            _X_right = np.array([before_array[:,3], delta_array[:,0]]).T # right és delta_y (before)
+            _y_right = after_array[:,3].reshape(-1, 1)                   # right (after)
+            regression_right = self.regression_right
+            regression_right.fit(_X_right, _y_right)
+            printer.ba('\t\t ------------------------------- valyon mennyire jó a right  metrikának a becslése -----------------------------')
+            printer.ba('\t\t regression_right.coef_ = ', regression_right.coef_)
+            printer.ba('\t\t regression_right.intercept_ = ', regression_right.intercept_)
+            _predicted_right = regression_right.predict(_X_right)
+#            plt.scatter(_y_right, _predicted_right)
+#            plt.ylabel('_predicted_right')
+#            plt.xlabel('_true_y_right')
+#            plt.show()
+            # kiplottolom a before after adatokat egy konkrét szenzor értékeire
+#            plt.scatter(before_array[:,3], after_array[:,3], c='black')
+#            plt.ylabel('after')
+#            plt.xlabel('before')
+#            plt.show()
+            # ezt felváltottam az alábbi három sorral
+            # Plot
+            # (flag 0 = disable, 1 = plot, 2 = save, 3 = both)
+            self.plot_before_after_sensor_estimation_in_one_chart(_y_right, _predicted_right, y_delta, 'right', self.plot_before_after_sensor_estimation_flag)
+            # [[before_array[:,3](right), after_array[:,3](right), y_delta{action}, time]]
+            _array_target_right = np.array([before_array[:,3].ravel(), after_array[:,3].ravel(), y_delta.ravel(), np.arange(0, after_array.shape[0], 1)]).T
+            self.plot_before_after_sensor_values(_array_target_right, 'right', self.plot_before_after_sensor_values_flag)
+
+
+
+            # továbbá eszembe jutott az is, hogy nem lenne rossz a left és a rigth szenzor értékének
+            # függvényében kimutatni, hogy mi volt a tényleges középponttól vett távolság
+            # és azt is, hogy mi volt predicted
+            # ez egy háromdimenziós pontfelhő lenne ahol x1->left, x2->rigth z->y_distance, z-> y_distance_predicted
+
+            # Az az igazság, hogy ennek nem a before after részben kéne lennie,
+            # de most itt megírom,, utána átteszem egy függvénybe
+            # és azt a függvényt akár itt is meghívhatom, de máshol is
+
+            # Az adatok nem a before afterből kellenek nekünk, hanem
+            # self.y_distance
+            # self.sensor_left
+            # self.sensor_center
+            # self.sensor_right
+
+            # time -> create
+            
+            self.plot_state_space_discover(self.plot_state_space_discover_flag)
+
+            self.plotter.test_plot(self.sensor_left, self.sensor_right, self.y_distance, self.x, self.plotter_flag, self.plotter_switch)
+
+            self.plotter.test_plot2(self.sensor_left, self.sensor_right, self.y_distance, self.x, self.plotter_flag, self.plotter_switch)
+
+
+
+
+
+            # most ki kell számolni, hogy mennyi lenne a szenzorok értéke, ha fel le lépkednénk
+
+            # mondjuk maximalizáljuk a fel le lépkedés mértékét 5-ben
+
+            move = np.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5])
+
+            move = np.array([-2, -1, 0, 1, 2])
+
+            move = np.array([-3, -2, -1, 0, 1, 2, 3])
+
+            move = np.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5])
+
+            move = np.array([-7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7])
+
+            # move = np.array([-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+
+
+  # most
+
+
+            printer.action('\t # Az egyes lépések várható kimeneteinek kiszámolása ----------------------------------------------')
+
+            printer.action('\t\t # Ennyivel mozdulna el egy szenzor adat 1 egység változással ha 1 lenne a before értéke')
+            proba_X_metrika   = np.array([1,1]).reshape(1, -1)
+            printer.action('proba_X_metrika   = ', proba_X_metrika)
+# hhh            predicted_proba_left = regression_left.predict(proba_X_metrika)
+            predicted_proba_left = self.regression_left.predict(proba_X_metrika)
+            predicted_proba_center = regression_center.predict(proba_X_metrika)
+            predicted_proba_right = regression_right.predict(proba_X_metrika)
+            printer.action('-------- 1 y up ->  left   = ', predicted_proba_left)
+            printer.action('-------- 1 y up ->  center = ', predicted_proba_center)
+            printer.action('-------- 1 y up ->  right  = ', predicted_proba_right)
+            printer.action('\n')
+
+            # EGY KURVA NAGY ELMÉLETI DILLEMMÁHOZ ÉRKEZTEM.
+
+            # HÁROM MEGOLDÁS VAN
+
+            # EBBŐL SZERINTEM MOST A LEGROSSZABBAT VÁLASZOTTAM
+
+            # 1, MINDENKÉPPEN VÁLASZT EGYET, A LEGJOBBAT
+
+            # 2, CSAK AKKOR MODOSÍT HA KÖZELEBB TUDJA VINNI A KÖZÉPPONTHOZ MINT AHOL MOST VAN
+
+            # 3, CSAK AKKOR MODOSÍT HA NEM A KÖZÉPPONTON VAN
+
+            # 4, CSAK AKKOR MODOSÍT HA KILÉPETT A SÁVBÓL
+
+            # 5, CSAK AKKOR MODOSÍT HA EGY ELŐRE MEGADOTT ÉRTÉKNÉL JOBBAN ELTÉR A KÖZÉPPONTTÓL
+            
+            action = 0; tmp = 999999990
+
+            for j in move:
+              printer.action('\n')
+              printer.action('\t\t minden j-re kiszámolom a regressziót és be is helyetessítjük a kapott értékekekt a modellbe')
+              printer.action('\t\t j = ', j)
+              # ide be kell helyettesítenem az éppen aktuális értéket, olyan mintha egy új X változót csinálnék amiben csak egy sor van és arra kérnék egy becslést a korábbi modell alapján
+              # a bement az éppen aktuális szenzoros érték és az új lépés
+
+              # na majd ezt a bemenetet kell ellenőrizni, hogy stimmel-e a tanítás során használt bemenettel
+              _X_left   = np.array([[self.distance_left_from_wall, j]])
+              _X_center = np.array([[self.distance_center_from_wall, j]])
+              _X_right  = np.array([[self.distance_right_from_wall, j]])
+
+              printer.action('\t\t ------------------------ a regresszió bemenetei az éppen aktuális értékek -------------------')
+              printer.action('\t\t _X_left   = ', _X_left)
+              printer.action('\t\t _X_center = ', _X_center)
+              printer.action('\t\t _X_right  = ', _X_right)
+
+              # a fenti értékek valószínűleg jók, de mindíg minden lépésnél ellenőrizni kell
+
+              predicted_left   = self.regression_left.predict(_X_left)
+              predicted_center = regression_center.predict(_X_center)
+              predicted_right  = regression_right.predict(_X_right)
+
+              printer.action('\t\t predicted_left   = ', predicted_left)
+              printer.action('\t\t predicted_center = ', predicted_center)
+              printer.action('\t\t predicted_right  = ', predicted_right)
+
+              printer.action('\t\t --------------------- a regression úgy tűnik, hogy jó és pontos ----------------------')
+# hhh              printer.action('\t\t regression_left.coef_   = ', regression_left.coef_)
+              printer.action('\t\t self.regression_left.coef_   = ', self.regression_left.coef_)
+              printer.action('\t\t regression_center.coef_ = ', regression_center.coef_)
+              printer.action('\t\t regression_right.coef_  = ', regression_right.coef_)
+# hhh              printer.action('\t\t regression_left.intercept_   = ', regression_left.intercept_)
+              printer.action('\t\t self.regression_left.intercept_   = ', self.regression_left.intercept_)
+              printer.action('\t\t regression_center.intercept_ = ', regression_center.intercept_)
+              printer.action('\t\t regression_right.intercept_  = ', regression_right.intercept_)
+
+              # nekünk majd azt az értéket kell választanunk amelyik segítségével a legközelebb jutunk a 0 értékhez
+
+              _X = np.array([predicted_left.ravel(), predicted_center.ravel(), predicted_right.ravel()]).T    # figyelni kell rá, hogy eredetileg is ez volt-e a változók sorrendje
+
+              _X_scaled = self.x_minmaxscaler.transform(_X)
+
+              printer.action('\t\t # Ez lesz a bemenete a neurális hálónak')
+              printer.action('\t\t -------------------------X-------------------------')
+              printer.action('\t\t ', _X)
+              printer.action('\t\t -------------------------X_scaled------------------')
+              printer.action('\t\t ', _X_scaled)
+# Elvileg meg lehetne csinálni, hogy az új értékek is mindenféleképen a -1, 1 intervallumba essenek, de jelenleg nem így történik
+# Ez nem lesz könnyű
+
+# Ami itt nehéz lesz, hogy a régi X értékekhez, vagy ahhoz amin elvégeztem az x_minmaxscalert hozzá kell csapnom az új linreg által számolt _X
+# tömböt és azon megcsiálnom a teljes skálázást (bár ez az egész módszer nem biztos, hogy jó, sőt, de nincs jobb ötletem)
+              
+              printer.action('\t\t ---------------Brutálisan hülye dolgot jelez előre ezért ellenőrizni kell, hogy mi a gond. Esetleg a bemeneti adatok?-----------------')
+
+# Lineáris regresszió
+#              predicted_position = self.regression.predict(_X)
+#              print('\t\t predicted_position linreg model            = ', predicted_position)
+# Lineáris regresszió helyett Neurális hálót használok
+              predicted_position_scaled = self.mlp.predict(_X_scaled)
+              printer.action('\t\t predicted_position neural net model scaled = ', predicted_position_scaled)
+# Vissza kell transzformálnom eredeti formájába
+              predicted_position = self.y_minmaxscaler.inverse_transform(predicted_position_scaled.reshape(-1, 1))
+              printer.action('\t\t predicted_position neural net model inverz = ', predicted_position)
+
+              printer.action('\t\t --------------------------------------------------------------------------------------------------------------------------------------')
+
+              # legyünk bátrak és módosítsuk az autó self.y pozicióját
+
+              # azzal az értékkel amely abszolút értékben a legkissebb, helyett
+              # mivel a célváltozónk akkor jó ha 0, mivel a középvonaltól mért eltérés
+              # ezért itt azt az értéket kell kiválasztani ami a legközelebb van 0-hoz
+
+              # természetesen ezen változtatni kell ha nem a középvonaltól való eltérés mértékét akarjuk becsülni
+              # de ahhoz fent is át kell állítani hogy mi legyen a self.y_distance számítása
+
+              if( abs(0 - predicted_position) < tmp):       # rossz - javítva - tesztelés alatt
+                action = j
+                tmp = abs(0 - predicted_position)
+                printer.action('\t\t ---------------------')
+                printer.action('\t\t  action = ', action)
+                printer.action('\t\t  predicted_position = ', predicted_position)
+                printer.action('\t\t  absolute distance from 0 (tmp) = ', tmp)
+                printer.action('\t\t ---------------------')
+
+              printer.action('\t\t adott j-re {0} kiszámoltuk az előrejelzést de még nem hoztunk döntést -----------------------------------------------------------------'.format(j))
+              printer.action('\t\t --------------------------------------------------------------------------------------------------------------------------------------')
+            
+            printer.action('\t minden j-re kiszámoltuk az előrejelzést de még nem hoztunk döntést -------------------------------------------------\n')
+# igazság szerint ez a kör minden lépésben lefut ha már van elég before after adatunk
+
+
+# a döntés azonban csak akkor fut le ha az alábbi feltétel teljesül, de igazából korábban már be van ágyazva ugyan ebbe a feltételbe
+
+# version 20. if( i % 3 == 0 ) -> version 22. if( i % 3 == 1 )
+
+          if( i % 3 == 0 ):                                                       # ugyan ez a feltétel amikor tanítom az út közepének a becslésére
+            printer.takeaction('------------------------------ IF i % 3 == 0 ------------------------------')
+            _summary_action_was_taken = 1
+            printer.takeaction('=================== TAKE ACTION ===================')
+# ez lett új az ML Auto 10.ipynb-hoz képest
+            self.before.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
+            printer.takeaction('-------- ennyivel módosítom self.y értékét --------')
+            printer.takeaction('self.y régi értéke = ', self.y)
+            # new v.27
+            if( self.y < self.road.wall_left[self.x]):        # Ha magasabb mint a ball fal akkor tegye a fal alá egyel
+              # self.y = self.road.wall_left[self.x] + 1
+              self.y = self.y + action
+              print('első if')
+              print('---------------> self.y {}, self.road.wall_left[self.x] = {}, self.road.wall_right = {}'.format(self.y,
+                                                                                                                self.road.wall_left[self.x],
+                                                                                                                self.road.wall_right[self.x]))
+            elif( self.y > self.road.wall_right[self.x]):
+              # self.y = self.road.wall_right[self.x] - 1       # Ha alacsonyabb mint a jobb fal akkor tegye a fal fölé egyel
+              self.y = self.y + action
+              print('második elif')
+              print('---------------> self.y {}, self.road.wall_left[self.x] = {}, self.road.wall_right = {}'.format(self.y,
+                                                                                                                self.road.wall_left[self.x],
+                                                                                                                self.road.wall_right[self.x]))
+            elif( self.y > self.road.wall_left[self.x] and self.y < self.road.wall_right[self.x]):
+              print('harmadik elif')
+              print('---------------> self.y {}, self.road.wall_left[self.x] = {}, self.road.wall_right = {}'.format(self.y,
+                                                                                                                self.road.wall_left[self.x],
+                                                                                                                self.road.wall_right[self.x]))
+              self.y = self.y + action
+            # new v.27 end
+# ez lett új az ML Auto 10.ipynb-hoz képest
+            self.calculate_distances()
+            self.after.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
+
+            print('self.y új értéke   = ', self.y)
+            print('action             = ', action)
+            print('----------------- módosítás vége -----------------')
+
+
+
+
+          # újra kell gondolni az egészet, ugyanis akkor is ki kell számolni a before after értéket amikor modosítom a pozicióját,
+          # vagyis végig kell gondolni ezt az egészet.
+          # az első elképzelésem az volt, hogy a poziciót csak bizonyos esetben modosíthatom, csak akkor amikor nincs tanítás, és nincs szimulált emelés, vagy csökkentés sem
+          # utóbbit az if( i % 3 == 2) feltétellel szűrtem
+
+
+
+# Ez a rész itt mindíg lefut
+
+      # new v.25
+
+      # Tároljuk el minden körben a ml modellek érétkeit (lehet, hogy ez egy kicsit lassítani fogja a futás)
+
+      if hasattr(auto.regression_left, 'coef_'):
+        self.regression_left_coef_history.append(self.regression_left.coef_)
+        self.regression_center_coef_history.append(self.regression_center.coef_)
+        self.regression_right_coef_history.append(self.regression_right.coef_)
+
+      # new v.25 end
+
+      # adjuk hozzá az értéket a self.y_history-hoz
+      self.y_history.append(self.y)
+      if( silent == False ):
+        print('# A run ciklus vége ------------------------------------------------------------------------------------------------------------------------------------------')
+        print('#   itt adom hozzás a self.y a self.y_history-hoz')
+        print('#    self.y :{}'.format(self.y))
+        print('# \t\t\t --------------- Summary ---------------')
+        print('# \t\t\t _summary_mlp_fit_was_taken         = ', _summary_mlp_fit_was_taken)
+        print('# \t\t\t _summary_mlp_prediction_was_taken  = ', _summary_mlp_prediction_was_taken)
+        print('# \t\t\t _summary_mesterseges_mozgatas      = ', _summary_mesterseges_mozgatas)
+        print('# \t\t\t _summary_action_were_taken         = ', _summary_action_was_taken)
+        print('# ')
+        print('# A run ciklus vége ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+      if ( i % 10 == 0 ):
+        clear_output(wait=True)
