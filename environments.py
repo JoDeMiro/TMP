@@ -92,15 +92,18 @@ class Road():
 
 
   def wizu(u = 100, v = 100, a=30, b=0.3, c=30, d=30, e=50, f=90, n=2):
-    distance    = np.arange(0, 1000, 1)
-    wide        = 100
-    wall_left   = 30*(np.sin(distance/180)) + distance * 0.3 + 30 * np.cos(distance/30) + 50 * np.sin(distance/90)
-    _distance = distance + u
-    wall_right  = a*(np.sin(_distance/180)) + _distance * b + c * np.cos(_distance/d) + e * np.sin(_distance/f)
-    wall_right  += v
-    wall_center = ( 1.3 * wall_left + 0.7 * wall_right ) / n
+    self.wall_left   = 30*(np.sin(self.distance/180)) + self.distance * 0.3 + 30 * np.cos(self.distance/30) + 50 * np.sin(self.distance/90)
+    self.wall_left[0:100] = 60
+    self.distance += u
+    self.wall_right  = a*(np.sin(self.distance/180)) + self.distance * b + c * np.cos(self.distance/d) + e * np.sin(self.distance/f)
+    self.wall_right  += v
+    self.wall_center = ( self.wall_left + self.wall_right ) / n
+    self.wall_center = ( 1.3 * self.wall_left + 0.7 * self.wall_right ) / n
+    self.wall_left[0:100]   = self.wall_left[101]
+    self.wall_center[0:100] = self.wall_center[101]
+    self.wall_right[0:100]  = self.wall_right[101]
 
-    plt.figure(figsize=(20,5)); plt.plot(wall_left); plt.plot(wall_right); plt.plot(wall_center); plt.show()
+    plt.figure(figsize=(20,5)); plt.plot(self.wall_left); plt.plot(self.wall_right); plt.plot(self.wall_center); plt.show()
 
 
 
