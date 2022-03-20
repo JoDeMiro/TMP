@@ -1,6 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+import MLPPlot
+from MLPPlot import DrawNN
+
+
 class PostPlotter():
   def __init__(self, car):
     self.car = car
