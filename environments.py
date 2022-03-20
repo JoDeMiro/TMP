@@ -93,10 +93,8 @@ class Road():
 
   def wizu(u = 100, v = 100, a=30, b=0.3, c=30, d=30, e=50, f=90, n=2):
     distance    = np.arange(0, 1000, 1)
-    road        = 100
+    wide        = 100
     wall_left   = 30*(np.sin(distance/180)) + distance * 0.3 + 30 * np.cos(distance/30) + 50 * np.sin(distance/90)
-    # wall_left[0:100] = 60
-    # wall_right  = wall_left + road
     _distance = distance + u
     wall_right  = a*(np.sin(_distance/180)) + _distance * b + c * np.cos(_distance/d) + e * np.sin(_distance/f)
     wall_right  += v
