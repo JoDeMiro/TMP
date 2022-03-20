@@ -1743,7 +1743,9 @@ class Car():
 
       # Tároljuk el minden körben a ml modellek érétkeit (lehet, hogy ez egy kicsit lassítani fogja a futás)
 
-      if hasattr(auto.regression_left, 'coef_'):
+      # if hasattr(auto.regression_left, 'coef_'):
+      # fffffffffff
+      if hasattr(self.regression_left, 'coef_'):
         self.regression_left_coef_history.append(self.regression_left.coef_)
         self.regression_center_coef_history.append(self.regression_center.coef_)
         self.regression_right_coef_history.append(self.regression_right.coef_)
