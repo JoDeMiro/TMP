@@ -12,6 +12,10 @@ from sklearn.preprocessing import MinMaxScaler
 import os
 import pickle
 
+from debils import Printer
+from environments import Road
+from plotters import PostPlotter, Plotter
+from storages import Storage
 
 class TestCar():
   def __init__(self, road, plotter, storage):
