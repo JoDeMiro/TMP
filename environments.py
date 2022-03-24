@@ -110,6 +110,32 @@ class Road():
         self.wall_left[0:100] = self.wall_left[101]
 
 
+    # A 95 folytatása azzal a különbséggel, hogy lehet adni neki egy kis zajt, csak a falakra
+
+    if(type == 94):
+        def func(x, shift, strech):
+            f = 30*(np.sin((x + shift)/(180 + strech))) + (x + shift) * 0.3 + 30 * np.cos((x + shift)/(30 + strech)) + 50 * np.sin((x + shift)/(90 + strech))
+            return f
+        self.length      = length # 3000
+        self.distance    = np.arange(0, self.length, 1)
+        self.wall_right  = func(self.distance, 0, 0)                                    # őt nem bántjuk
+        # A wall_left eltolás és nyújtás is van rajta
+        self.wall_left   = func(self.distance, self.shift, self.strech) + self.wide    # a másik falat viszont jól megzavarjuk
+        # A center ismét a két fal átlage és nem a self.wall_right + (self.wide / 2)    # Azért, hogy egyik fallal se legyen determinisztikus
+        self.wall_center = ( self.wall_left + self.wall_right ) / 2
+        # self.wall_center = self.wall_right + (self.wide / 2)
+        # Add Noise
+        def noise(x, noise):
+            _tmp = np.random.randn(x.size)*noise
+            return x + _tmp
+        self.wall_right = noise(self.wall_right)
+        self.wall_left  = noise(self.wall_left)
+        self.wall_right[0:100] = self.wall_right[101]
+        self.wall_center[0:100] = self.wall_center[101]
+        self.wall_left[0:100] = self.wall_left[101]
+
+
+
 
 
 
