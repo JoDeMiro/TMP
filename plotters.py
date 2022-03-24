@@ -403,13 +403,13 @@ class PostPlotter():
 
       # sajnos át kell alakítanom másképpen nem megy
 
-      array_regression_left_coef_history = np.array(auto.regression_left_coef_history)
+      array_regression_left_coef_history = np.array(car.regression_left_coef_history)
       array_regression_left_coef_history = array_regression_left_coef_history[:,[0][0]]
 
-      array_regression_center_coef_history = np.array(auto.regression_center_coef_history)
+      array_regression_center_coef_history = np.array(car.regression_center_coef_history)
       array_regression_center_coef_history = array_regression_center_coef_history[:,[0][0]]
 
-      array_regression_right_coef_history = np.array(auto.regression_right_coef_history)
+      array_regression_right_coef_history = np.array(car.regression_right_coef_history)
       array_regression_right_coef_history = array_regression_right_coef_history[:,[0][0]]
 
       a = True if 'action' in coefs else False
