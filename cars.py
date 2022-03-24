@@ -92,7 +92,13 @@ class TestCar():
         if(int(self.road.wall_right[k]) > self.y):
           self.printer.sr('Sensor center = ', self.distance_center_from_wall)
           break
-
+      if( self.sensor_center_enable == False ):
+        self.distance_center_from_wall = 0
+        
+    # Kiiktatom a középső szenzort -> egyszerűen beállítom az értékét 0-ra
+    # self.distance_center_from_wall = 0
+            
+            
 #    k = self.x; d = 0
 #    while(k < self.x + self.sight):
 #      k += 1;  d += 1
@@ -529,6 +535,12 @@ class Car():
         if(int(self.road.wall_right[k]) > self.y):
           self.printer.sr('Sensor center = ', self.distance_center_from_wall)
           break
+      if( self.sensor_center_enable == False ):
+        self.distance_center_from_wall = 0
+        
+    # Kiiktatom a középső szenzort -> egyszerűen beállítom az értékét 0-ra
+    # self.distance_center_from_wall = 0
+
 
 #    k = self.x; d = 0
 #    while(k < self.x + self.sight):
