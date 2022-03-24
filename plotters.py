@@ -451,8 +451,7 @@ class Plotter():
 
 
   # plotter plot_lr_weight
-
-  def plot_lr_weight(car, sensors = ['left'], coefs = ['sensor', 'action'], x = 1, flag = 1):
+  def plot_lr_weight(self, car, sensors = ['left'], coefs = ['sensor', 'action'], x = 1, flag = 1):
 
     print(len(car.regression_center_coef_history))
     # print(car.regression_center_coef_history[100][0])
