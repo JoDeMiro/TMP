@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class Road():
-  def __init__(self, wide, length, type=1, v=124, shift=0, strech=0):
+  def __init__(self, wide, length, type=1, v=124, shift=0, strech=0, noise=0):
     self.shift       = shift  # 0
     self.strech      = strech # 0
     self.length      = length # 3000
@@ -125,11 +125,11 @@ class Road():
         self.wall_center = ( self.wall_left + self.wall_right ) / 2
         # self.wall_center = self.wall_right + (self.wide / 2)
         # Add Noise
-        def noise(x, noise):
+        def noiser(x, noise):
             _tmp = np.random.randn(x.size)*noise
             return x + _tmp
-        self.wall_right = noise(self.wall_right)
-        self.wall_left  = noise(self.wall_left)
+        self.wall_right = noiser(self.wall_right, noise)
+        self.wall_left  = noiser(self.wall_left, noise)
         self.wall_right[0:100] = self.wall_right[101]
         self.wall_center[0:100] = self.wall_center[101]
         self.wall_left[0:100] = self.wall_left[101]
