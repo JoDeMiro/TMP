@@ -135,8 +135,6 @@ class Road():
         self.wall_left[0:100] = self.wall_left[101]
 
 
-
-
     # A Ez mind szép és jó, de a target még mindíg determinisztikus a két vonaltól, -> mivel (wall_center = (wall_left + wall_right) /2)
 
     # Ezen fogok most egy picit változtatni -> lesz a centernek egy saját fluktuációja
@@ -164,6 +162,44 @@ class Road():
             _tmp = np.linspace(0, b, x.size)
             return x + _tmp
         self.wall_center = linear(self.wall_center, b)
+        self.wall_right[0:100] = self.wall_right[101]
+        self.wall_center[0:100] = self.wall_center[101]
+        self.wall_left[0:100] = self.wall_left[101]
+
+
+    # Concept drift
+
+    # Egy ideig a ball falhol van közelebb a target -> Aztán átvált és a másik falhoz lesz közelebb
+
+    if(type == 79):
+        def func(x, shift, strech):
+            f = 200 + 30*(np.sin((x + shift)/(180 + strech)))  + 50 * np.sin((x + shift)/(90 + strech))
+            return f
+        self.length      = length # 3000
+        self.distance    = np.arange(0, self.length, 1)
+        self.wall_right  = func(self.distance, 0, 0)                                    # őt nem bántjuk
+        # A wall_left eltolás és nyújtás is van rajta
+        self.wall_left   = func(self.distance, self.shift, self.strech) + self.wide    # a másik falat viszont jól megzavarjuk
+        # egy ideig az egyik falhoz, majd a másikhoz lesz közelebb
+        self.wall_center = ( self.wall_left + self.wall_right ) / 2
+        def drift(x, rate_point):
+            cut_point = int(x.size * rate_point)
+            _tmp = np.zeros(x.size)
+            print('cut_point ', cut_point)
+            for i in range(x.size):
+                if( i < cut_point ):
+                    _tmp[i] = ( self.wall_left[i] + self.wall_right[i] ) / 2.1
+                else:
+                    _tmp[i] = ( self.wall_left[i] + self.wall_right[i] ) / 1.9
+            return _tmp
+        # Add Noise
+        def noiser(x, noise):
+            _tmp = np.random.randn(x.size)*noise
+            return x + _tmp
+        self.wall_right = noiser(self.wall_right, noise)
+        self.wall_left  = noiser(self.wall_left, noise)
+        # Add some drift
+        self.wall_center = drift(self.wall_center, 0.2)
         self.wall_right[0:100] = self.wall_right[101]
         self.wall_center[0:100] = self.wall_center[101]
         self.wall_left[0:100] = self.wall_left[101]
