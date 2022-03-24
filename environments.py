@@ -39,7 +39,7 @@ class Road():
             return f
         self.length      = length # 3000
         self.distance    = np.arange(0, self.length, 1)
-        self.wall_right  = func(self.distance)
+        self.wall_right  = func(self.distance, 0)
         # A wall_left-et kell megnyújtani
         self.wall_left   = func(self.distance, self.strech) + self.wide
         # A center pedig nem a kettő átlaga legyen, hanem a self.wall_right + (self.wide / 2)
