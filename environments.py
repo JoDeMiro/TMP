@@ -99,10 +99,10 @@ class Road():
             return f
         self.length      = length # 3000
         self.distance    = np.arange(0, self.length, 1)
-        self.wall_right  = func(self.distance, 0)
+        self.wall_right  = func(self.distance, 0, 0)                                    # őt nem bántjuk
         # A wall_left eltolás és nyújtás is van rajta
-        self.wall_left   = func(self.distance + self.shift, self.strech) + self.wide
-        # A center ismét a két fal átlage és nem a self.wall_right + (self.wide / 2)     # Azért, hogy egyik fallal se legyen determinisztikus
+        self.wall_left   = func(self.distance + self.shift, self.strech) + self.wide    # a másik falat viszont jól megzavarjuk
+        # A center ismét a két fal átlage és nem a self.wall_right + (self.wide / 2)    # Azért, hogy egyik fallal se legyen determinisztikus
         self.wall_center = ( self.wall_left + self.wall_right ) / 2
         # self.wall_center = self.wall_right + (self.wide / 2)
         self.wall_right[0:100] = self.wall_right[101]
