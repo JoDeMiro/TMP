@@ -58,7 +58,7 @@ class PerformanceTest(object):
 
 			x = threading.Thread(target=self.thread_function, args=(counter, address, ))
 			x.start()
-
+			
 			time.sleep(delay)
 			print('----------------------------')
 			print(self.trace_response_times)
