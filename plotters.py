@@ -442,6 +442,99 @@ class Plotter():
         if( flag == 1 or flag == 3 ): plt.show()
         if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_v1_{0:04}'.format(x)+'.png'); plt.close(fig)
 
+
+
+
+
+
+
+
+
+# plotter plot_lr_weight
+
+def plot_lr_weight(car, sensors = ['left'], coefs = ['sensor', 'action'], x = 1, flag = 1):
+
+  print(len(car.regression_center_coef_history))
+  # print(car.regression_center_coef_history[100][0])
+  # print(car.regression_center_coef_history[100][0][0])
+  # print(car.regression_center_coef_history[100][0][1])
+  # print(car.regression_left.coef_)
+
+  if( flag != 0 ):
+
+        # _X_left   =  [[51 -3]]
+        # _X_center =  [[110  -3]]
+        # _X_right  =  [[51 -3]]
+
+        # Emlékeztetőül,
+        # A regressziók ilyen bemeneteket várnak, tehát az első coefficiens azt mondja meg,
+        # hogy adott szezor értéket ekkora súllyal kell figyelmbe venni
+        # a második coefficiens pedig azt modja meg, hogy a változtatás irányát ekkora
+        # sullyal kell figelembe venni -> ha azt akarjuk meghatározni, hogy adott szezorértékből
+        # mi lesz, ha valamennyivel elmozdítjuk az autót.
+        # A szezor értéke és ez elmozdítás mértéke változók (paraméterek) az egyenletben
+        # a szorzótényezők (az egyenlet coefficiensei pedig állandók)
+        # Ez a plott a coefficienseket jelenítit meg, illetve azt, hogy ezek hogyan változtak
+        # a futás során.
+
+    # sajnos át kell alakítanom másképpen nem megy
+
+    array_regression_left_coef_history = np.array(auto.regression_left_coef_history)
+    array_regression_left_coef_history = array_regression_left_coef_history[:,[0][0]]
+
+    array_regression_center_coef_history = np.array(auto.regression_center_coef_history)
+    array_regression_center_coef_history = array_regression_center_coef_history[:,[0][0]]
+
+    array_regression_right_coef_history = np.array(auto.regression_right_coef_history)
+    array_regression_right_coef_history = array_regression_right_coef_history[:,[0][0]]
+
+    a = True if 'action' in coefs else False
+    s = True if 'sensor' in coefs else False
+
+    fig = plt.figure(figsize=(10, 6))
+    ax = fig.add_subplot()
+
+    if ( 'left' in sensors ):
+      if a : ax.plot(array_regression_left_coef_history[:,0], c = '#5195c4', linestyle='dashed', label = 'left sensor coef')
+      if s : ax.plot(array_regression_left_coef_history[:,1], c = '#5195c4', label = 'left action coef')
+
+    if ( 'center' in sensors ):
+      if a : ax.plot(array_regression_center_coef_history[:,0], c = '#000000', linestyle='dashed', label = 'center sensor coef')
+      if s : ax.plot(array_regression_center_coef_history[:,1], c = '#000000', label = 'center action coef')
+
+    if ( 'right' in sensors ):
+      if a : ax.plot(array_regression_right_coef_history[:,0], c = '#ff8821', linestyle='dashed', label = 'right sensor coef')
+      if s : ax.plot(array_regression_right_coef_history[:,1], c = '#ff8821', label = 'right action coef')
+    ax.legend(frameon=False)
+    # fig.show()
+
+    fileName = 'plot_lr_coefs'
+    if( flag == 1 or flag == 3 ): plt.show(); # fig.show();
+    if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_{0:04}'.format(x)+'.png', bbox_inches='tight'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   def test_plot(self, sensor_left, sensor_right, y_distance, x, flag, lists = [0]):
 
     if( flag != 0 ):

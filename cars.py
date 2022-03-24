@@ -147,8 +147,10 @@ class TestCar():
       ax.plot(range(int(self.x), int(self.x+self.distance_center_from_wall)), np.repeat(self.y, self.distance_center_from_wall))
       # ax.plot(range(int(self.x), int(self.x+self.distance_left_from_wall)), range(int(self.y), int(self.y+self.distance_left_from_wall)))
       # ax.plot(range(int(self.x), int(self.x+self.distance_right_from_wall)), range(int(self.y), int(self.y-self.distance_right_from_wall), -1))
-      ax.vlines(x = self.x, ymin = self.y, ymax = self.road.wall_left[self.x])
-      ax.vlines(x = self.x, ymin = self.y, ymax = self.road.wall_right[self.x])
+      print('self.distance_right_from_wall = ', self.distance_right_from_wall)
+      print('self.distance_left_from_wall  = ', self.distance_left_from_wall)
+      ax.vlines(x = self.x, ymin = self.y, ymax = self.road.wall_left[self.x], color='orange')
+      ax.vlines(x = self.x, ymin = self.y, ymax = self.road.wall_right[self.x], color='blue')
       if( len(self.y_history) > 0 ):
         ax.plot(self.y_history)
         ax.set_title('#i = ' + str(self.x), fontsize=18, fontweight='bold')
