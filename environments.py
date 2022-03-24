@@ -163,8 +163,8 @@ class Road():
         def fluctuator(x, period, amplitude):
             _tmp = np.sin(x/180 * period) * amplitude
             return x + _tmp
-        _center_fluctuator_period = 10
-        _center_fluctuator_amplitude = 10
+        _center_fluctuator_period = 1000
+        _center_fluctuator_amplitude = 1000
         self.wall_center = fluctuator(self.wall_center, _center_fluctuator_period, _center_fluctuator_amplitude)
         self.wall_right[0:100] = self.wall_right[101]
         self.wall_center[0:100] = self.wall_center[101]
