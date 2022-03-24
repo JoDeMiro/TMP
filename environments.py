@@ -95,13 +95,13 @@ class Road():
 
     if(type == 95):
         def func(x, shift, strech):
-            f = 30*(np.sin(x/(180 + strech))) + x * 0.3 + 30 * np.cos(x/(30 + strech)) + 50 * np.sin(x/(90 + strech))
+            f = 30*(np.sin((x + shift)/(180 + strech))) + (x + shift) * 0.3 + 30 * np.cos((x + shift)/(30 + strech)) + 50 * np.sin((x + shift)/(90 + strech))
             return f
         self.length      = length # 3000
         self.distance    = np.arange(0, self.length, 1)
         self.wall_right  = func(self.distance, 0, 0)                                    # őt nem bántjuk
         # A wall_left eltolás és nyújtás is van rajta
-        self.wall_left   = func(self.distance + self.shift, self.strech) + self.wide    # a másik falat viszont jól megzavarjuk
+        self.wall_left   = func(self.distance, self.shift, self.strech) + self.wide    # a másik falat viszont jól megzavarjuk
         # A center ismét a két fal átlage és nem a self.wall_right + (self.wide / 2)    # Azért, hogy egyik fallal se legyen determinisztikus
         self.wall_center = ( self.wall_left + self.wall_right ) / 2
         # self.wall_center = self.wall_right + (self.wide / 2)
