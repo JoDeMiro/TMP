@@ -22,14 +22,13 @@ class Road():
         self.distance    = np.arange(0, self.length, 1)
         self.wall_right  = func(self.distance)
         # A wall_left-et kell eltolni
-        self.wall_left   = func(self.distance) + self.wide
+        self.wall_left   = func(self.distance + self.shift) + self.wide
         # A center pedig nem a kettő átlaga legyen, hanem a self.wall_right + (self.wide / 2)
         # self.wall_center = ( self.wall_left + self.wall_right ) / 2
         self.wall_center = self.wall_right + (self.wide / 2)
-        # self.wall_right[0:100] = 60
         self.wall_right[0:100] = self.wall_right[101]
-        self.wall_left[0:100] = self.wall_left[101]
         self.wall_center[0:100] = self.wall_center[101]
+        self.wall_left[0:100] = self.wall_left[101]
 
 
 
