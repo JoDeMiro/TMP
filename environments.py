@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class Road():
-  def __init__(self, wide, length, type=1, v=124, shift=0, strech=0, noise=0):
+  def __init__(self, wide, length, type=1, v=124, shift=0, strech=0, noise=0, b=0):
     self.shift       = shift  # 0
     self.strech      = strech # 0
     self.length      = length # 3000
@@ -160,12 +160,10 @@ class Road():
         self.wall_right = noiser(self.wall_right, noise)
         self.wall_left  = noiser(self.wall_left, noise)
         # Add some non-det function to center
-        def fluctuator(x, period, amplitude):
-            _tmp = np.sin(x/180 * period) * amplitude
+        def linear(x, b):
+            _tmp = np.linspace(0, b, x.size)
             return x + _tmp
-        _center_fluctuator_period = 1000
-        _center_fluctuator_amplitude = 1000
-        self.wall_center = fluctuator(self.wall_center, _center_fluctuator_period, _center_fluctuator_amplitude)
+        self.wall_center = linear(self.wall_center, b)
         self.wall_right[0:100] = self.wall_right[101]
         self.wall_center[0:100] = self.wall_center[101]
         self.wall_left[0:100] = self.wall_left[101]
