@@ -86,6 +86,36 @@ class Road():
         self.wall_left[0:100] = self.wall_left[101]
 
 
+    # 99 - 96
+    #
+    # Ezek a jó eredmények amelyeket a ML_Auto_V28.ipynb adtak, azért van mert az 'út' egyik 'falától' még determinisztikus volt a távolsága
+
+    # Ezen most változtatunk és az út közepe a két fal közötti távolság fele lesz, ezáltal csak a 99-es beállítás esetén lesz determinisztikus
+    # ha a két fal nincs szinkronban akkor nem lesz determinisztikus kapcsolat egyik változó között sem és az út között sem.
+
+    if(type == 95):
+        def func(x, shift, strech):
+            f = 30*(np.sin(x/(180 + strech))) + x * 0.3 + 30 * np.cos(x/(30 + strech)) + 50 * np.sin(x/(90 + strech))
+            return f
+        self.length      = length # 3000
+        self.distance    = np.arange(0, self.length, 1)
+        self.wall_right  = func(self.distance, 0)
+        # A wall_left eltolás és nyújtás is van rajta
+        self.wall_left   = func(self.distance + self.shift, self.strech) + self.wide
+        # A center ismét a két fal átlage és nem a self.wall_right + (self.wide / 2)     # Azért, hogy egyik fallal se legyen determinisztikus
+        self.wall_center = ( self.wall_left + self.wall_right ) / 2
+        # self.wall_center = self.wall_right + (self.wide / 2)
+        self.wall_right[0:100] = self.wall_right[101]
+        self.wall_center[0:100] = self.wall_center[101]
+        self.wall_left[0:100] = self.wall_left[101]
+
+
+
+
+
+
+
+
 
 
 
