@@ -1752,34 +1752,15 @@ class Car():
             self.printer.takeaction('-------- ennyivel módosítom self.y értékét --------')
             self.printer.takeaction('self.y régi értéke = ', self.y)
             # new v.27
-            if( self.y < self.road.wall_left[self.x]):        # Ha magasabb mint a ball fal akkor tegye a fal alá egyel
-              # self.y = self.road.wall_left[self.x] + 1
-              self.y = self.y + action
-              print('első if')
-              print('---------------> self.y {}, self.road.wall_left[self.x] = {}, self.road.wall_right = {}'.format(self.y,
-                                                                                                                self.road.wall_left[self.x],
-                                                                                                                self.road.wall_right[self.x]))
-            elif( self.y > self.road.wall_right[self.x]):
-              # self.y = self.road.wall_right[self.x] - 1       # Ha alacsonyabb mint a jobb fal akkor tegye a fal fölé egyel
-              self.y = self.y + action
-              print('második elif')
-              print('---------------> self.y {}, self.road.wall_left[self.x] = {}, self.road.wall_right = {}'.format(self.y,
-                                                                                                                self.road.wall_left[self.x],
-                                                                                                                self.road.wall_right[self.x]))
-            elif( self.y > self.road.wall_left[self.x] and self.y < self.road.wall_right[self.x]):
-              print('harmadik elif')
-              print('---------------> self.y {}, self.road.wall_left[self.x] = {}, self.road.wall_right = {}'.format(self.y,
-                                                                                                                self.road.wall_left[self.x],
-                                                                                                                self.road.wall_right[self.x]))
-              self.y = self.y + action
+            self.y = self.y + action
             # new v.27 end
 # ez lett új az ML Auto 10.ipynb-hoz képest
             self.calculate_distances()
             self.after.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
 
-            print('self.y új értéke   = ', self.y)
-            print('action             = ', action)
-            print('----------------- módosítás vége -----------------')
+            self.printer.takeaction('self.y új értéke   = ', self.y)
+            self.printer.takeaction('action             = ', action)
+            self.printer.takeaction('----------------- módosítás vége -----------------')
 
 
 
@@ -1809,15 +1790,16 @@ class Car():
       # adjuk hozzá az értéket a self.y_history-hoz
       self.y_history.append(self.y)
       if( silent == False ):
-        print('# A run ciklus vége ------------------------------------------------------------------------------------------------------------------------------------------')
-        print('#   itt adom hozzás a self.y a self.y_history-hoz')
-        print('#    self.y :{}'.format(self.y))
-        print('# \t\t\t --------------- Summary ---------------')
-        print('# \t\t\t _summary_mlp_fit_was_taken         = ', _summary_mlp_fit_was_taken)
-        print('# \t\t\t _summary_mlp_prediction_was_taken  = ', _summary_mlp_prediction_was_taken)
-        print('# \t\t\t _summary_mesterseges_mozgatas      = ', _summary_mesterseges_mozgatas)
-        print('# \t\t\t _summary_action_were_taken         = ', _summary_action_was_taken)
-        print('# ')
-        print('# A run ciklus vége ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+        self.printer.util('# A run ciklus vége ------------------------------------------------------------------------------------------------------------------------------------------')
+        self.printer.util('#   itt adom hozzás a self.y a self.y_history-hoz')
+        self.printer.util('#    self.y :{}'.format(self.y))
+        self.printer.util('# \t\t\t --------------- Summary ---------------')
+        self.printer.util('# \t\t\t _summary_mlp_fit_was_taken         = ', _summary_mlp_fit_was_taken)
+        self.printer.util('# \t\t\t _summary_mlp_prediction_was_taken  = ', _summary_mlp_prediction_was_taken)
+        self.printer.util('# \t\t\t _summary_mesterseges_mozgatas      = ', _summary_mesterseges_mozgatas)
+        self.printer.util('# \t\t\t _summary_action_were_taken         = ', _summary_action_was_taken)
+        self.printer.util('# ')
+        self.printer.util('# A run ciklus vége ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+      # Egy nagyon hasznos kiegészítés ha a programot Jupyter Notebookban futtatom
       if ( i % 10 == 0 ):
         clear_output(wait=True)
