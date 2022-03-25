@@ -161,7 +161,7 @@ class TestCar():
       if( flag == 1 or flag == 3 ): plt.show();
       if( flag == 2 or flag == 3 ): fig.savefig('history{0:04}'.format(self.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
 
-      print(' --------------- plot --------------- ')
+      # print(' --------------- plot --------------- ')
 
 
 
@@ -183,7 +183,7 @@ class TestCar():
       if( flag == 1 or flag == 3 ): plt.show();
       if( flag == 2 or flag == 3 ): fig.savefig('history{0:04}'.format(self.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
 
-      print(' --------------- plot --------------- ')
+      # print(' --------------- plot --------------- ')
 
 
 
@@ -1251,7 +1251,7 @@ class Car():
           self.printer.info('y_scaled.min = ', y_scaled.min())
           self.printer.info('---------------------')
           self.mlp.fit(X_scaled, y_scaled)
-# hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+
 # Ha olyanunk van plottoljunk
           self.plotter.plot_mlp(mlp = self.mlp ,flag = self.plotter_mlp_flag)
 

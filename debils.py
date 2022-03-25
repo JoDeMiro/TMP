@@ -119,6 +119,8 @@ class Printer():
     if( self._ta == True ):
       print(text)
 
+  def __str__(self):
+        return " _nn: {0}\n _lr: {1}\n _sr: {2}\n _ba: {3}\n _nf: {4}\n _db: {5}\n _er: {6}\n _ut: {7}\n _bs: {8}\n _in: {9}\n _ac: {10}\n _dc: {11}\n _ta: {12}".format(self._nn, self._lr, self._sr, self._ba, self._nf, self._db, self._er, self._ut, self._bs, self._in, self._ac, self._dc, self._ta)
 
 
 

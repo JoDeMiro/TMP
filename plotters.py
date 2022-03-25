@@ -24,9 +24,34 @@ class PostPlotter():
     '''
     self.car.plot_history(flag)
 
+  def plot_history_self(self):
+      fig, ax = self.car.road.show()
+      circle = plt.Circle((self.car.x, self.car.y), 5, color='black')
+      ax.add_patch(circle)
+      # v.24 - add standardized color -> left = green, rigth = orange
+      ax.plot(range(int(self.car.x), int(self.car.x+self.car.distance_center_from_wall)), np.repeat(self.car.y, self.car.distance_center_from_wall))
+      # print('self.distance_right_from_wall = ', self.distance_right_from_wall)
+      # print('self.distance_left_from_wall  = ', self.distance_left_from_wall)
+      ax.vlines(x = self.car.x, ymin = self.car.y, ymax = self.car.road.wall_left[self.car.x], color='orange')
+      ax.vlines(x = self.car.x, ymin = self.car.y, ymax = self.car.road.wall_right[self.car.x], color='blue')
+      if( len(self.car.y_history) > 0 ):
+        ax.plot(self.car.y_history)
+        ax.set_title('#i = ' + str(self.car.x), fontsize=18, fontweight='bold')
+      plt.show()
+
   def plot_y_distance(self):
     'A Car objektum y_distace atributumát rajzolja ki'
+    plt.figure(figsize=(26, 4))
     plt.plot(self.car.y_distance)
+    plt.show()
+
+  def plot_y_distance_fix(self):
+    'A Car objektum y_distace atributumát rajzolja ki'
+    plt.figure(figsize=(26, 4))
+    _y_distance = np.zeros(self.car.road.length)
+    _end = len(self.car.y_distance)
+    _y_distance[0:_end] = np.array(self.car.y_distance)
+    plt.plot(_y_distance)
     plt.show()
 
   def plot_mlp(self):
