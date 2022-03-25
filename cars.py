@@ -78,7 +78,6 @@ class TestCar():
 
 
   def calculate_distances(self):
-    # ha bármikor kevesebb a faltól mért távolsága bármelyik szenzoron akkor a szenzorokon mért távolság is ennyi lesz
 
     k = self.x; d = 0
     while(k < self.x + self.sight_center):
@@ -118,16 +117,15 @@ class TestCar():
 #        self.printer.sr('Sensor from right wall = ', self.distance_right_from_wall)
 #        break
 
-# Ehelyett most az van hogy nézzen simán oldalra
+    # Ehelyett most az van hogy nézzen simán oldalra
     self.distance_right_from_wall = self.road.wall_right[self.x] - self.y
 
+# ToDo - Ez egy potenciális hiba
     # az ördög soha nem alszik
     self.distance_from_top     = abs(self.road.wall_left[self.x] - self.y)
     self.distance_from_bottom  = abs(self.road.wall_right[self.x] - self.y)
     self.printer.sr('most távolsagra van a felső faltól = ', self.distance_from_top)
     self.printer.sr('most távolsagra van az alsó faltól = ', self.distance_from_bottom)
-
-
 
     # ezt az értéket fogom becsülni, a középértéktől való eltérés mértéke, ha pozitív akkor fölfelé, ha negatív akkor lefelé tér el
     self.vertical_distance_from_middle = self.y - self.road.wall_center[self.x]
@@ -165,6 +163,8 @@ class TestCar():
 
       print(' --------------- plot --------------- ')
 
+
+
   def plot_history_fixed(self, flag, ymin, ymax, width, height):
     if( flag != 0 ):
       fig, ax = self.road.show(width, height)
@@ -185,12 +185,15 @@ class TestCar():
 
       print(' --------------- plot --------------- ')
 
+
+
   def save_plots(self):
     plt.figure(figsize=(12, 5)); plt.scatter(self.y_distance_real, self.y_distance_predicted)
     plt.ylabel('y_distance_predicted'); plt.xlabel('y_distance_real');
     plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
     plt.savefig('test_y_distance_vs_y_distance_predicted_{0:04}'.format(self.x)+'.png')
     plt.close()
+
 
 
   def cond1(self, x):
@@ -219,7 +222,6 @@ class TestCar():
       return False
 
   def cond5(self, x):
-    print(self.y_distance[-1])
     # Bármikor lefut ha bármely szenzor értéke kisebb mint
     if( self.y_distance[-1] > 10 or self.y_distance[-1] < -10):
       return True
@@ -254,7 +256,8 @@ class TestCar():
 
 
 
-# Itt kezdődik a lényeg
+
+      # Itt kezdődik a lényeg
       if ( i >= 0 ):
 
         # A helyzet az, hogy a TestCar nem tanul, ezért erre a részre nem lesz szükségünk
@@ -275,7 +278,6 @@ class TestCar():
         # ------------------------------------------------ ACTION (X) ------------------------------------------------
 
         action = 0
-
 
         # if( i % 3 == 0 ):
         if( i > -1 ):
@@ -314,9 +316,10 @@ class TestCar():
 
               _X_scaled = self.x_minmaxscaler.transform(_X)
 
-# Neurális háló becslése
+              # Neurális háló becslése
               predicted_position_scaled = self.mlp.predict(_X_scaled)
-# Vissza kell transzformálnom eredeti formájába
+
+              # Vissza kell transzformálnom eredeti formájába
               predicted_position = self.y_minmaxscaler.inverse_transform(predicted_position_scaled.reshape(-1, 1))
 
               # legyünk bátrak és módosítsuk az autó self.y pozicióját
@@ -328,7 +331,7 @@ class TestCar():
               # természetesen ezen változtatni kell ha nem a középvonaltól való eltérés mértékét akarjuk becsülni
               # de ahhoz fent is át kell állítani hogy mi legyen a self.y_distance számítása
 
-              if( abs(0 - predicted_position) < tmp):       # rossz - javítva - tesztelés alatt
+              if( abs(0 - predicted_position) < tmp):       # rossz volt - javítva - tesztelés alatt
                 action = j
                 tmp = abs(0 - predicted_position)
                 self.printer.action('\t\t ---------------------')
@@ -343,37 +346,40 @@ class TestCar():
             self.printer.action('\t minden j-re kiszámoltuk az előrejelzést de még nem hoztunk döntést -------------------------------------------------\n')
 
 
-# a döntés azonban csak akkor fut le ha az alábbi feltétel teljesül, de igazából korábban már be van ágyazva ugyan ebbe a feltételbe
 
+# A Car osztály korábbi verzióiban a következők szerint volt kiértékelve, hogy mikor hozhat döntést
 # version 20. if( i % 3 == 0 ) -> version 22. if( i % 3 == 1 )
 # eddig csak akkor engedtem neki lépést, ha ( i % 3 == 0 ):
 # most viszont mindíg
 
-## Na most egy olyat is bele tudok írni, hogy csak akkor lépjen ha (mondjuk túl közel van a falhoz)
+# a döntés azonban csak akkor fut le ha az alábbi feltétel teljesül
+# Na most egy olyat is bele tudok írni, hogy csak akkor lépjen ha (mondjuk túl közel van a falhoz)
 
 #          if( i % 3 == 0 ):
 #          if( i > -1 ):
 #          if( self.sensor_right[-1] < 10 or self.sensor_left[-1] < 10 or self.sensor_center[-1] < 10 ):
+
           take_action = condition_for_action(self.x)
-          if( take_action == True ):
-            print('take_action == True')
 
           if( take_action == True ):
+            
+            # Ha ténylegesen meglépi a döntés csak akkor kerül bele a self.before és a self.after adatba a változók értéke
 
-            self.printer.takeaction('------------------------------ IF i % 3 == 0 ------------------------------')
+            self.printer.takeaction('------------------------------ IF i % 3 > 0 ------------------------------')
             _summary_action_was_taken = 1
-            print('=================== TAKE ACTION ===================')
+            self.printer.takeaction('=================== TAKE ACTION ===================')
             self.before.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
-            print('-------- ennyivel módosítom self.y értékét --------')
-            print('self.y régi értéke = ', self.y)
+            self.printer.takeaction('-------- ennyivel módosítom self.y értékét --------')
+            self.printer.takeaction('self.y régi értéke = ', self.y)
             self.y = self.y + action
             self.calculate_distances()
             self.after.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
-            print('self.y új értéke   = ', self.y)
-            print('action             = ', action)
-            print('----------------- módosítás vége -----------------')
+            self.printer.takeaction('self.y új értéke   = ', self.y)
+            self.printer.takeaction('self.y_distance[-1]= ', self.y_distance[-1])
+            self.printer.takeaction('action             = ', action)
+            self.printer.takeaction('----------------- módosítás vége -----------------')
 
-
+      # y értékét mindíg hozzá adjuk a self.y_history listához
       self.y_history.append(self.y)
       # adjuk hozzá az értéket a self.y_history-hoz
       self.printer.util('# A run ciklus vége ------------------------------------------------------------------------------------------------------------------------------------------')
@@ -388,10 +394,13 @@ class TestCar():
       self.printer.util('# ')
       self.printer.util('# A run ciklus vége ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
 
+      # Egy nagyon hasznos kiegészítés ha a programot Jupyter Notebookban futtatom
       if ( i % 10 == 0 ):
         clear_output(wait=True)
       
+    print('---------- Finish Run ----------')
 
+# A TestCar osztály vége
 # ------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -432,8 +441,6 @@ class TestCar():
 
 
 # ------------------------------------------------------------------------------------------------------------------------------------
-
-
 
 
 class Car():
@@ -459,8 +466,8 @@ class Car():
     self.road = road
     self.x = 0
     self.y = self.road.wall_center[0]
-    self.sight = 400           # ennyit lát előre 300, 54, 154
-    self.sight_center = 400    # ennyit lát előre 150
+    self.sight = 400                                    # ennyit lát előre 300, 54, 154
+    self.sight_center = 400                             # ennyit lát előre 150
 
     self.y_history  = []
     self.x_history  = []
@@ -486,17 +493,16 @@ class Car():
                             nesterovs_momentum=True,
                             early_stopping=True,
                             n_iter_no_change=2000)
-# Bevezetésre került az X MinMaxScaler
-    self.x_minmaxscaler = MinMaxScaler(feature_range=(-1,1))
-# Bevezetésre került az y MinMaxScaler
-    self.y_minmaxscaler = MinMaxScaler(feature_range=(-1,1))
-#
+
+    self.x_minmaxscaler = MinMaxScaler(feature_range=(-1,1))       # A range amibe skálázunk (-1, 1)
+    self.y_minmaxscaler = MinMaxScaler(feature_range=(-1,1))       # A range amibe skálázunk (-1, 1)
+
 #    self.regression_left = LinearRegression()
-    self.regression_left = LinearRegression(fit_intercept=False)
+    self.regression_left = LinearRegression(fit_intercept=False)   # Kiiktattam az intercept-et
 #    self.regression_center = LinearRegression()
-    self.regression_center = LinearRegression(fit_intercept=False)
+    self.regression_center = LinearRegression(fit_intercept=False) # Kiiktattam az intercept-et
 #    self.regression_right = LinearRegression()
-    self.regression_right = LinearRegression(fit_intercept=False)
+    self.regression_right = LinearRegression(fit_intercept=False)  # Kiiktattam az intercept-et
 
 # data holders
     self.sensor_center = []
@@ -518,7 +524,6 @@ class Car():
 
 
   def calculate_distances(self):
-    # ha bármikor kevesebb a faltól mért távolsága bármelyik szenzoron akkor a szenzorokon mért távolság is ennyi lesz
     
 #    k = self.x; d = 0
 #    while(k < self.x + self.sight_center):
@@ -581,10 +586,12 @@ class Car():
     # és a bemeneti változó a 3 szenzorból érkező adat lesz.
     # valójában azt mérjük, hogy milyen távolságra van az út közepétől
 
-    self.distance_from_top     = abs(self.road.wall_left[self.x] - self.y)
-    self.distance_from_bottom  = abs(self.road.wall_right[self.x] - self.y)
-    self.printer.sr('most távolsagra van a felső faltól = ', self.distance_from_top)
-    self.printer.sr('most távolsagra van az alsó faltól = ', self.distance_from_bottom)
+    # Úgy vettem észre, hogy sehol nem használom
+    # ToDo: Sehol nem használom ki kell venni a kódból
+    # self.distance_from_top     = abs(self.road.wall_left[self.x] - self.y)
+    # self.distance_from_bottom  = abs(self.road.wall_right[self.x] - self.y)
+    # self.printer.sr('most távolsagra van a felső faltól = ', self.distance_from_top)
+    # self.printer.sr('most távolsagra van az alsó faltól = ', self.distance_from_bottom)
 
 
     self.printer.info('cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc')
