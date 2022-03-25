@@ -3,6 +3,7 @@
 packages:
   - git
   - openssh-client
+  - ffmpeg
 
 
 write_files:

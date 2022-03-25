@@ -212,12 +212,19 @@ class TestCar():
       return False
 
   def cond4(self, x):
-    # a cond4 egyébként sehol nem hasznája fel x-ként megadott paramétert de a signatura miatt kell neki, hogy illeszkedjen a többivel
+    # Bármikor lefut ha bármely szenzor értéke kisebb mint
     if( self.sensor_right[-1] < 10 or self.sensor_left[-1] < 10 or self.sensor_center[-1] < 10 ):
       return True
     else:
       return False
 
+  def cond5(self, x):
+    print(self.y_distance[-1])
+    # Bármikor lefut ha bármely szenzor értéke kisebb mint
+    if( self.y_distance[-1] > 10 or self.y_distance[-1] < -10):
+      return True
+    else:
+      return False
 
   def run(self, run_length, cond = 1):
     # Mi alapján legyen végrehajtva a tényleges action
@@ -229,6 +236,8 @@ class TestCar():
       condition_for_action = self.cond3
     if cond == 4:
       condition_for_action = self.cond4
+    if cond == 5:
+      condition_for_action = self.cond5
 
 
     for i in range(0, run_length, 1):
@@ -351,7 +360,7 @@ class TestCar():
 
           if( take_action == True ):
 
-            print('------------------------------ IF i % 3 == 0 ------------------------------')
+            self.printer.takeaction('------------------------------ IF i % 3 == 0 ------------------------------')
             _summary_action_was_taken = 1
             print('=================== TAKE ACTION ===================')
             self.before.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
@@ -365,20 +374,19 @@ class TestCar():
             print('----------------- módosítás vége -----------------')
 
 
-
-      # adjuk hozzá az értéket a self.y_history-hoz
-      print('# A run ciklus vége ------------------------------------------------------------------------------------------------------------------------------------------')
-      print('#   itt adom hozzás a self.y a self.y_history-hoz')
       self.y_history.append(self.y)
-      print('#    self.y :')
-      print(self.y)
-      print('# \t\t\t --------------- Summary ---------------')
-      print('# \t\t\t _summary_mlp_fit_was_taken         = ', _summary_mlp_fit_was_taken)
-      print('# \t\t\t _summary_mlp_prediction_was_taken  = ', _summary_mlp_prediction_was_taken)
-      print('# \t\t\t _summary_mesterseges_mozgatas      = ', _summary_mesterseges_mozgatas)
-      print('# \t\t\t _summary_action_were_taken         = ', _summary_action_was_taken)
-      print('# ')
-      print('# A run ciklus vége ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+      # adjuk hozzá az értéket a self.y_history-hoz
+      self.printer.util('# A run ciklus vége ------------------------------------------------------------------------------------------------------------------------------------------')
+      self.printer.util('#   itt adom hozzás a self.y a self.y_history-hoz')
+      self.printer.util('#    self.y :')
+      self.printer.util(self.y)
+      self.printer.util('# \t\t\t --------------- Summary ---------------')
+      self.printer.util('# \t\t\t _summary_mlp_fit_was_taken         = ', _summary_mlp_fit_was_taken)
+      self.printer.util('# \t\t\t _summary_mlp_prediction_was_taken  = ', _summary_mlp_prediction_was_taken)
+      self.printer.util('# \t\t\t _summary_mesterseges_mozgatas      = ', _summary_mesterseges_mozgatas)
+      self.printer.util('# \t\t\t _summary_action_were_taken         = ', _summary_action_was_taken)
+      self.printer.util('# ')
+      self.printer.util('# A run ciklus vége ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
 
       if ( i % 10 == 0 ):
         clear_output(wait=True)
