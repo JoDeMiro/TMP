@@ -1834,3 +1834,36 @@ class Car():
       # Egy nagyon hasznos kiegészítés ha a programot Jupyter Notebookban futtatom
       if ( i % 10 == 0 ):
         clear_output(wait=True)
+
+
+
+def plot_history_range(auto, flag, start, end, autoscale = True):
+  if( flag != 0 ):
+    fig, ax = auto.road.show()
+    if( autoscale == True ):
+      _wall_left_max   = auto.road.wall_left[start:end].max()
+      _wall_left_min   = auto.road.wall_left[start:end].min()
+      _wall_right_max  = auto.road.wall_right[start:end].max()
+      _wall_right_min  = auto.road.wall_right[start:end].min()
+      _wall_center_max = auto.road.wall_center[start:end].max()
+      _wall_center_min = auto.road.wall_center[start:end].min()
+      _top    = np.array([_wall_left_max, _wall_right_max, _wall_center_max]).max()
+      _bottom = np.array([_wall_left_min, _wall_right_min, _wall_center_min]).min()
+      ax.set_ylim(_bottom - 10, _top + 10)
+    end = len(auto.y_history) if end > len(auto.y_history) else end
+    ax.set_xlim(start, end)
+    circle = plt.Circle((auto.x, auto.y), 5, color='black')
+    ax.add_patch(circle)
+    # v.24 - add standardized color -> left = green, rigth = orange
+    ax.plot(range(int(auto.x), int(auto.x+auto.distance_center_from_wall)), np.repeat(auto.y, auto.distance_center_from_wall))
+    # ax.plot(range(int(self.x), int(self.x+self.distance_left_from_wall)), range(int(self.y), int(self.y+self.distance_left_from_wall)))
+    # ax.plot(range(int(self.x), int(self.x+self.distance_right_from_wall)), range(int(self.y), int(self.y-self.distance_right_from_wall), -1))
+    ax.vlines(x = auto.x, ymin = auto.y, ymax = auto.road.wall_left[auto.x])
+    ax.vlines(x = auto.x, ymin = auto.y, ymax = auto.road.wall_right[auto.x])
+    if( len(auto.y_history) > 0 ):
+      ax.plot(auto.y_history)
+      ax.set_title('#i = ' + str(auto.x), fontsize=18, fontweight='bold')
+    if( flag == 1 or flag == 3 ): plt.show();
+    if( flag == 2 or flag == 3 ): fig.savefig('history{0:04}'.format(auto.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+    # print(' --------------- plot --------------- ')
