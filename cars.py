@@ -665,9 +665,9 @@ class Car():
 
       # print(' --------------- plot --------------- ')
 
-  def plot_history_range(self, flag, start = 0, end = 9999999, autoscale = True):
+  def plot_history_range(self, flag, _start = 0, _end = 9999999, _autoscale = True):
     if( flag != 0 ):
-      plot_history_range(auto = self, flag = 1, start = start, end = end, autoscale = autoscale)
+      plot_history_range(auto = self, flag = 1, start = _start, end = _end, autoscale = _autoscale)
 
 
 # Bevezetésre került, elementi a képet
