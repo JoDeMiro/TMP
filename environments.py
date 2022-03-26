@@ -210,6 +210,31 @@ class Road():
 
 
 
+    # Random Walk
+
+    # Csak kíváncsiságból, hogy teljesítene egy random walkon (ha mindhárom, a szenzorok és a target is ugya az)
+
+    if(type == 69):
+        def randomwalk(x, m):
+            a = np.zeros(x.size)
+            r = np.random.randn(a.size) * m
+            c = np.add.accumulate(r) + 1000
+            return c
+            
+        self.length      = length # 3000
+        self.distance    = np.arange(0, self.length, 1)
+        self.wall_center = randomwalk(self.distance, 10)                                    # randomwalk
+        self.wall_right  = self.wall_center - wide
+        self.wall_left   = self.wall_center + wide
+        self.wall_right[0:100] = self.wall_right[101]
+        self.wall_center[0:100] = self.wall_center[101]
+        self.wall_left[0:100] = self.wall_left[101]
+
+
+
+
+
+
 
 
 
