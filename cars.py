@@ -657,8 +657,39 @@ class Car():
       if( flag == 1 or flag == 3 ): plt.show();
       if( flag == 2 or flag == 3 ): fig.savefig('history{0:04}'.format(self.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
 
-      print(' --------------- plot --------------- ')
+      # print(' --------------- plot --------------- ')
 
+    
+  def plot_history_range(self, flag, start, end, autoscale = True):
+    if( flag != 0 ):
+      fig, ax = self.road.show()
+      if( autoscale == True ):
+        _wall_left_max   = self.road.wall_left[start:end].max()
+        _wall_left_min   = self.road.wall_left[start:end].min()
+        _wall_right_max  = self.road.wall_right[start:end].max()
+        _wall_right_min  = self.road.wall_right[start:end].min()
+        _wall_center_max = self.road.wall_center[start:end].max()
+        _wall_center_min = self.road.wall_center[start:end].min()
+        _top    = np.array([_wall_left_max, _wall_right_max, _wall_center_max]).max()
+        _bottom = np.array([_wall_left_min, _wall_right_min, _wall_center_min]).min()
+        ax.set_ylim(_bottom - 10, _top + 10)
+      end = len(self.y_history) if end > len(self.y_history) else end
+      ax.set_xlim(start, end)
+      circle = plt.Circle((self.x, self.y), 5, color='black')
+      ax.add_patch(circle)
+      # v.24 - add standardized color -> left = green, rigth = orange
+      ax.plot(range(int(self.x), int(self.x+self.distance_center_from_wall)), np.repeat(self.y, self.distance_center_from_wall))
+      # ax.plot(range(int(self.x), int(self.x+self.distance_left_from_wall)), range(int(self.y), int(self.y+self.distance_left_from_wall)))
+      # ax.plot(range(int(self.x), int(self.x+self.distance_right_from_wall)), range(int(self.y), int(self.y-self.distance_right_from_wall), -1))
+      ax.vlines(x = self.x, ymin = self.y, ymax = self.road.wall_left[self.x])
+      ax.vlines(x = self.x, ymin = self.y, ymax = self.road.wall_right[self.x])
+      if( len(self.y_history) > 0 ):
+        ax.plot(self.y_history)
+        ax.set_title('#i = ' + str(self.x), fontsize=18, fontweight='bold')
+      if( flag == 1 or flag == 3 ): plt.show();
+      if( flag == 2 or flag == 3 ): fig.savefig('history{0:04}'.format(self.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+      # print(' --------------- plot --------------- ')
 
 # Bevezetésre került, elementi a képet
   def save_plots(self):
