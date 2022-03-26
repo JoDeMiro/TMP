@@ -141,25 +141,9 @@ class TestCar():
     self.sensor_right.append(self.distance_right_from_wall)
 
 
-
-  def plot_history(self, flag):
+  def plot_history(self, flag, autoscale = True):
     if( flag != 0 ):
-      fig, ax = self.road.show()
-      circle = plt.Circle((self.x, self.y), 5, color='black')
-      ax.add_patch(circle)
-      # v.24 - add standardized color -> left = green, rigth = orange
-      ax.plot(range(int(self.x), int(self.x+self.distance_center_from_wall)), np.repeat(self.y, self.distance_center_from_wall))
-      # ax.plot(range(int(self.x), int(self.x+self.distance_left_from_wall)), range(int(self.y), int(self.y+self.distance_left_from_wall)))
-      # ax.plot(range(int(self.x), int(self.x+self.distance_right_from_wall)), range(int(self.y), int(self.y-self.distance_right_from_wall), -1))
-      print('self.distance_right_from_wall = ', self.distance_right_from_wall)
-      print('self.distance_left_from_wall  = ', self.distance_left_from_wall)
-      ax.vlines(x = self.x, ymin = self.y, ymax = self.road.wall_left[self.x], color='orange')
-      ax.vlines(x = self.x, ymin = self.y, ymax = self.road.wall_right[self.x], color='blue')
-      if( len(self.y_history) > 0 ):
-        ax.plot(self.y_history)
-        ax.set_title('#i = ' + str(self.x), fontsize=18, fontweight='bold')
-      if( flag == 1 or flag == 3 ): plt.show();
-      if( flag == 2 or flag == 3 ): fig.savefig('history{0:04}'.format(self.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+      plot_history(auto = self, flag = 1, autoscale = autoscale)
 
       # print(' --------------- plot --------------- ')
 
@@ -646,29 +630,19 @@ class Car():
     self.printer.debug('\t\t\t -------------- Append End --------------')
 
 
-  def plot_history(self, flag):
+
+  def plot_history(self, flag, autoscale = True):
     if( flag != 0 ):
-      fig, ax = self.road.show()
-      circle = plt.Circle((self.x, self.y), 5, color='black')
-      ax.add_patch(circle)
-      # v.24 - add standardized color -> left = green, rigth = orange
-      ax.plot(range(int(self.x), int(self.x+self.distance_center_from_wall)), np.repeat(self.y, self.distance_center_from_wall))
-      # ax.plot(range(int(self.x), int(self.x+self.distance_left_from_wall)), range(int(self.y), int(self.y+self.distance_left_from_wall)))
-      # ax.plot(range(int(self.x), int(self.x+self.distance_right_from_wall)), range(int(self.y), int(self.y-self.distance_right_from_wall), -1))
-      ax.vlines(x = self.x, ymin = self.y, ymax = self.road.wall_left[self.x])
-      ax.vlines(x = self.x, ymin = self.y, ymax = self.road.wall_right[self.x])
-      if( len(self.y_history) > 0 ):
-        ax.plot(self.y_history)
-        ax.set_title('#i = ' + str(self.x), fontsize=18, fontweight='bold')
-      if( flag == 1 or flag == 3 ): plt.show();
-      if( flag == 2 or flag == 3 ): fig.savefig('history{0:04}'.format(self.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+      plot_history(auto = self, flag = 1, autoscale = autoscale)
 
       # print(' --------------- plot --------------- ')
 
-  def plot_history_range(self, flag, _start = 0, _end = 9999999, _autoscale = True):
-    if( flag != 0 ):
-      plot_history_range(auto = self, flag = 1, start = _start, end = _end, autoscale = _autoscale)
 
+  def plot_history_range(self, flag, start = 0, end = 9999999, autoscale = True):
+    if( flag != 0 ):
+      plot_history_range(auto = self, flag = 1, start = start, end = end, autoscale = autoscale)
+
+      # print(' --------------- plot --------------- ')
 
 # Bevezetésre került, elementi a képet
   def save_plots(self):
@@ -1816,9 +1790,57 @@ class Car():
 
 
 
+
+
+
+
+
+# --------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+def plot_history(auto, flag, autoscale = True):
+  if( flag != 0 ):
+    fig, ax = auto.road.show()
+    if( autoscale == True ):
+      _wall_left_max   = auto.road.wall_left.max()
+      _wall_left_min   = auto.road.wall_left.min()
+      _wall_right_max  = auto.road.wall_right.max()
+      _wall_right_min  = auto.road.wall_right.min()
+      _wall_center_max = auto.road.wall_center.max()
+      _wall_center_min = auto.road.wall_center.min()
+      _top    = np.array([_wall_left_max, _wall_right_max, _wall_center_max]).max()
+      _bottom = np.array([_wall_left_min, _wall_right_min, _wall_center_min]).min()
+      ax.set_ylim(_bottom - 10, _top + 10)
+    circle = plt.Circle((auto.x, auto.y), 5, color='black')
+    ax.add_patch(circle)
+    # v.24 - add standardized color -> left = green, rigth = orange
+    ax.plot(range(int(auto.x), int(auto.x + auto.distance_center_from_wall)), np.repeat(auto.y, auto.distance_center_from_wall))
+    # ax.plot(range(int(self.x), int(self.x+self.distance_left_from_wall)), range(int(self.y), int(self.y+self.distance_left_from_wall)))
+    # ax.plot(range(int(self.x), int(self.x+self.distance_right_from_wall)), range(int(self.y), int(self.y-self.distance_right_from_wall), -1))
+    print('self.distance_right_from_wall = ', auto.distance_right_from_wall)
+    print('self.distance_left_from_wall  = ', auto.distance_left_from_wall)
+    ax.vlines(x = auto.x, ymin = auto.y, ymax = auto.road.wall_left[auto.x], color='orange')
+    ax.vlines(x = auto.x, ymin = auto.y, ymax = auto.road.wall_right[auto.x], color='blue')
+    if( len(auto.y_history) > 0 ):
+      ax.plot(auto.y_history)
+      ax.set_title('#i = ' + str(auto.x), fontsize=18, fontweight='bold')
+    if( flag == 1 or flag == 3 ): plt.show();
+    if( flag == 2 or flag == 3 ): fig.savefig('history{0:04}'.format(auto.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+
+
+
 def plot_history_range(auto, flag, start, end, autoscale = True):
   if( flag != 0 ):
     fig, ax = auto.road.show()
+    start = 0 if start < 0 else start
+    end   = len(auto.y_history) if end < start else end
+    end   = len(auto.y_history) if end > len(auto.y_history) else end
     if( autoscale == True ):
       _wall_left_max   = auto.road.wall_left[start:end].max()
       _wall_left_min   = auto.road.wall_left[start:end].min()
@@ -1829,7 +1851,6 @@ def plot_history_range(auto, flag, start, end, autoscale = True):
       _top    = np.array([_wall_left_max, _wall_right_max, _wall_center_max]).max()
       _bottom = np.array([_wall_left_min, _wall_right_min, _wall_center_min]).min()
       ax.set_ylim(_bottom - 10, _top + 10)
-    end = len(auto.y_history) if end > len(auto.y_history) else end
     ax.set_xlim(start, end)
     circle = plt.Circle((auto.x, auto.y), 5, color='black')
     ax.add_patch(circle)
@@ -1844,5 +1865,3 @@ def plot_history_range(auto, flag, start, end, autoscale = True):
       ax.set_title('#i = ' + str(auto.x), fontsize=18, fontweight='bold')
     if( flag == 1 or flag == 3 ): plt.show();
     if( flag == 2 or flag == 3 ): fig.savefig('history{0:04}'.format(auto.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
-
-    # print(' --------------- plot --------------- ')
