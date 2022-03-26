@@ -640,6 +640,10 @@ class Car():
     self.printer.debug('\t\t\t -------------- Append End --------------')
 
 
+  def plot_history_test(self, flag):
+    if( flat != 0 ):
+      plot_history_range(auto = self, flag = 1, start = 10, end = 200, autoscale = True)
+
   def plot_history(self, flag):
     if( flag != 0 ):
       fig, ax = self.road.show()
