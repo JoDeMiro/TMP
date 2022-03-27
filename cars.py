@@ -1409,7 +1409,7 @@ class Car():
             # (flag 0 = disable, 1 = plot, 2 = save, 3 = both)
             # Lecseréltem ezt
             if( self.sensor_center_enable == True ):
-              self.plot_before_after_sensor_estimation_in_one_chart(_y_center, _predicted_center, y_delta, 'center', self.plot_before_after_sensor_estimation_flag)
+              # self.plot_before_after_sensor_estimation_in_one_chart(_y_center, _predicted_center, y_delta, 'center', self.plot_before_after_sensor_estimation_flag)
               # Erre
               # job_for_2A = multiprocessing.Process(target=self.plot_before_after_sensor_estimation_in_one_chart,args=(_y_center, _predicted_center, y_delta, 'center', self.plot_before_after_sensor_estimation_flag))
               # job_for_2A.start()
@@ -1418,7 +1418,8 @@ class Car():
             _array_target_center = np.array([before_array[:,2].ravel(), after_array[:,2].ravel(), y_delta.ravel(), np.arange(0, after_array.shape[0], 1)]).T
             # Lecseréltem ezt
             if( self.sensor_center_enable == True ):
-              self.plot_before_after_sensor_values(_array_target_center, 'center', self.plot_before_after_sensor_values_flag)
+              print('áááááááááááááááááááááááááá')
+              # self.plot_before_after_sensor_values(_array_target_center, 'center', self.plot_before_after_sensor_values_flag)
               # Erre
               # job_for_2 = multiprocessing.Process(target=self.plot_before_after_sensor_values,args=(_array_target_center, 'center', self.plot_before_after_sensor_values_flag))
               # job_for_2.start()
