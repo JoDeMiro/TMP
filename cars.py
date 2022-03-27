@@ -1347,11 +1347,12 @@ class Car():
             # Még nekem is barátkoznom kell az értelmezésével
             # Ezért erről később írok
 
-            # Lecseréltem ezt
-            self.plot_before_after_sensor_estimation_in_one_chart(_y_left, _predicted_left, y_delta, 'left', self.plot_before_after_sensor_estimation_flag)
-            # Erre
-            # job_for_1A = multiprocessing.Process(target=self.plot_before_after_sensor_estimation_in_one_chart,args=(_y_left, _predicted_left, y_delta, 'left', self.plot_before_after_sensor_estimation_flag))
-            # job_for_1A.start()
+            # Lecseréltem ezt plot_frequency
+            if( i % 3 * self.plot_frequency == 0 ):
+              self.plot_before_after_sensor_estimation_in_one_chart(_y_left, _predicted_left, y_delta, 'left', self.plot_before_after_sensor_estimation_flag)
+              # Erre
+              # job_for_1A = multiprocessing.Process(target=self.plot_before_after_sensor_estimation_in_one_chart,args=(_y_left, _predicted_left, y_delta, 'left', self.plot_before_after_sensor_estimation_flag))
+              # job_for_1A.start()
 
             self.printer.ba('_X_left << az a változó csomag ami adott szenzorra a sensor before értékét és az Y tengelyen vett elmozdulás mértékét tartalmazza >> = \n', _X_left)
             self.printer.ba('_y_left << az a változó vector ami egy elmozdítás után mért szenzor értékét tartalmazza [ilyere változott] az elmozdítás után>> = \n', _y_left)
@@ -1375,7 +1376,8 @@ class Car():
             # Vizsgáljuk meg, hogy milyen kapcsolat van a [...]
             # bal szenzor skálázás elötti és a bal szenzor skálázás utáni értéke között
             # Lecseréltem ezt
-            self.plot_before_after_sensor_values(_array_target_left, 'left', self.plot_before_after_sensor_values_flag)
+            if( i % 3 * self.plot_frequency == 0 ):
+              self.plot_before_after_sensor_values(_array_target_left, 'left', self.plot_before_after_sensor_values_flag)
             # https://stackoverflow.com/questions/19662906/plotting-with-matplotlib-in-threads
             # Erre
             # job_for_1 = multiprocessing.Process(target=self.plot_before_after_sensor_values,args=(_array_target_left, 'left', self.plot_before_after_sensor_values_flag))
@@ -1395,35 +1397,33 @@ class Car():
             self.printer.ba('\t\t regression_center.coef_ = ', regression_center.coef_)
             self.printer.ba('\t\t regression_center.intercept_', regression_center.intercept_)
             _predicted_center = regression_center.predict(_X_center)
-#            plt.scatter(_y_center, _predicted_center)
-#            plt.ylabel('_predicted_center')
-#            plt.xlabel('_true_y_center')
-#            plt.show()
+
             # kiplottolom a before after adatokat egy konkrét szenzor értékeire
-#            plt.scatter(before_array[:,2], after_array[:,2], c='black')
-#            plt.ylabel('after')
-#            plt.xlabel('before')
-#            plt.show()
+
+  #         plt.scatter(_y_center, _predicted_center)
+  #         plt.scatter(before_array[:,2], after_array[:,2], c='black')
             # ezt felváltottam az alábbi három sorral
             # Plot
             # (flag 0 = disable, 1 = plot, 2 = save, 3 = both)
             # Lecseréltem ezt
             if( self.sensor_center_enable == True ):
-              self.plot_before_after_sensor_estimation_in_one_chart(_y_center, _predicted_center, y_delta, 'center', self.plot_before_after_sensor_estimation_flag)
-              pass
-              # Erre
-              # job_for_2A = multiprocessing.Process(target=self.plot_before_after_sensor_estimation_in_one_chart,args=(_y_center, _predicted_center, y_delta, 'center', self.plot_before_after_sensor_estimation_flag))
-              # job_for_2A.start()
+              if( i % 3 * self.plot_frequency == 0 ):
+                self.plot_before_after_sensor_estimation_in_one_chart(_y_center, _predicted_center, y_delta, 'center', self.plot_before_after_sensor_estimation_flag)
+                pass
+                # Erre
+                # job_for_2A = multiprocessing.Process(target=self.plot_before_after_sensor_estimation_in_one_chart,args=(_y_center, _predicted_center, y_delta, 'center', self.plot_before_after_sensor_estimation_flag))
+                # job_for_2A.start()
             
             # [[before_array[:,2](center), after_array[:,2](center), y_delta{action}, time]]
             _array_target_center = np.array([before_array[:,2].ravel(), after_array[:,2].ravel(), y_delta.ravel(), np.arange(0, after_array.shape[0], 1)]).T
             # Lecseréltem ezt
             if( self.sensor_center_enable == True ):
-              self.plot_before_after_sensor_values(_array_target_center, 'center', self.plot_before_after_sensor_values_flag)
-              pass
-              # Erre
-              # job_for_2 = multiprocessing.Process(target=self.plot_before_after_sensor_values,args=(_array_target_center, 'center', self.plot_before_after_sensor_values_flag))
-              # job_for_2.start()
+              if( i % 3 * self.plot_frequency == 0 ):
+                self.plot_before_after_sensor_values(_array_target_center, 'center', self.plot_before_after_sensor_values_flag)
+                pass
+                # Erre
+                # job_for_2 = multiprocessing.Process(target=self.plot_before_after_sensor_values,args=(_array_target_center, 'center', self.plot_before_after_sensor_values_flag))
+                # job_for_2.start()
 
 
   # -------------- right
@@ -1435,30 +1435,28 @@ class Car():
             self.printer.ba('\t\t regression_right.coef_ = ', regression_right.coef_)
             self.printer.ba('\t\t regression_right.intercept_ = ', regression_right.intercept_)
             _predicted_right = regression_right.predict(_X_right)
-#            plt.scatter(_y_right, _predicted_right)
-#            plt.ylabel('_predicted_right')
-#            plt.xlabel('_true_y_right')
-#            plt.show()
+
             # kiplottolom a before after adatokat egy konkrét szenzor értékeire
-#            plt.scatter(before_array[:,3], after_array[:,3], c='black')
-#            plt.ylabel('after')
-#            plt.xlabel('before')
-#            plt.show()
+
+  #         plt.scatter(_y_right, _predicted_right)
+  #         plt.scatter(before_array[:,3], after_array[:,3], c='black')
             # ezt felváltottam az alábbi három sorral
             # Plot
             # (flag 0 = disable, 1 = plot, 2 = save, 3 = both)
             # Lecseréltem ezt
-            self.plot_before_after_sensor_estimation_in_one_chart(_y_right, _predicted_right, y_delta, 'right', self.plot_before_after_sensor_estimation_flag)
-            # Erre
-            # job_for_3A = multiprocessing.Process(target=self.plot_before_after_sensor_estimation_in_one_chart,args=(_y_right, _predicted_right, y_delta, 'right', self.plot_before_after_sensor_estimation_flag))
-            # job_for_3A.start()
-            # [[before_array[:,3](right), after_array[:,3](right), y_delta{action}, time]]
+            if( i % 3 * self.plot_frequency == 0 ):
+              self.plot_before_after_sensor_estimation_in_one_chart(_y_right, _predicted_right, y_delta, 'right', self.plot_before_after_sensor_estimation_flag)
+              # Erre
+              # job_for_3A = multiprocessing.Process(target=self.plot_before_after_sensor_estimation_in_one_chart,args=(_y_right, _predicted_right, y_delta, 'right', self.plot_before_after_sensor_estimation_flag))
+              # job_for_3A.start()
+              # [[before_array[:,3](right), after_array[:,3](right), y_delta{action}, time]]
             _array_target_right = np.array([before_array[:,3].ravel(), after_array[:,3].ravel(), y_delta.ravel(), np.arange(0, after_array.shape[0], 1)]).T
             # Lecseréltem ezt
-            self.plot_before_after_sensor_values(_array_target_right, 'right', self.plot_before_after_sensor_values_flag)
-            # Erre
-            # job_for_3 = multiprocessing.Process(target=self.plot_before_after_sensor_values,args=(_array_target_right, 'right', self.plot_before_after_sensor_values_flag))
-            # job_for_3.start()
+            if( i % 3 * self.plot_frequency == 0 ):
+              self.plot_before_after_sensor_values(_array_target_right, 'right', self.plot_before_after_sensor_values_flag)
+              # Erre
+              # job_for_3 = multiprocessing.Process(target=self.plot_before_after_sensor_values,args=(_array_target_right, 'right', self.plot_before_after_sensor_values_flag))
+              # job_for_3.start()
 
 
 
@@ -1476,8 +1474,6 @@ class Car():
             # self.sensor_left
             # self.sensor_center
             # self.sensor_right
-
-            # time -> create
             
             self.plot_state_space_discover(self.plot_state_space_discover_flag)
 
