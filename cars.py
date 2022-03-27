@@ -662,7 +662,7 @@ class Car():
     plt.figure(figsize=(12, 5)); plt.scatter(_y_test_full, predicted_test_full, c='r');
     plt.ylabel('y_distance_predicted'); plt.xlabel('y_distance_real');
     plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
-    plt.savefig('y_distance_vs_y_distance_predicted_all_{0:04}'.format(self.x)+'.png')
+        plt.savefig('y_distance_vs_y_distance_predicted_all_{0:04}'.format(self.x)+'.png')
     plt.close()
 
 
@@ -848,73 +848,6 @@ class Car():
       if( flag == 1 or flag == 3 ): plt.show();
       if( flag == 2 or flag == 3 ): fig.savefig('sensorRight_vs_yDistance_v1_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
 
-
-
-  def plot_before_after_sensor_estimation(self, _y_left, _predicted_left, y_delta, flag):
-
-    if( flag != 0 ):
-
-      # mennyire jó a left szenzor before after becslése
-      fig = plt.figure(figsize=(6, 6));
-      plt.scatter(_y_left, _predicted_left); plt.ylabel('_predicted_left'); plt.xlabel('_true_y_left');
-      plt.scatter(_y_left[-1], _predicted_left[-1], c='black', s=12);
-      # plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
-      plt.title('#i = ' + str(self.x));
-      if( flag == 1 or flag == 3 ): plt.show();
-      if( flag == 2 or flag == 3 ): fig.savefig('sensorLeftAfterScaled_vs_sensorLeftPredictedAfterScaled_v0_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
-
-      # color -> y_delta
-      fig = plt.figure(figsize=(6, 7.5))
-      plt.scatter(_y_left, _predicted_left, c=y_delta); plt.ylabel('_predicted_left'); plt.xlabel('_true_y_left');
-      plt.title('#i = ' + str(self.x));
-      cmap = mpl.cm.viridis
-      # bounds = [-4, -3, -2, -1, 0, 1, 2, 3, 4]
-      bounds = np.arange(y_delta.min(), y_delta.max(), 1)
-      if( bounds.size < 3 ): bounds = [-1, 0, 1]
-      # print('bounds = ', bounds)
-      norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
-      plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
-             orientation='horizontal',
-             label='Elmozdítás mértéke');
-      if( flag == 1 or flag == 3 ): plt.show();
-      if( flag == 2 or flag == 3 ): fig.savefig('sensorLeftAfterScaled_vs_sensorLeftPredictedAfterScaled_v1_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
-
-      # size  -> y_delta legyen már rajta valami méretjelző ábra
-      fig = plt.figure(figsize=(6, 6))
-      plt.scatter(_y_left, _predicted_left, s=(3*y_delta)+10); plt.ylabel('_predicted_left'); plt.xlabel('_true_y_left');
-      plt.title('#i = ' + str(self.x));
-      if( flag == 1 or flag == 3 ): plt.show();
-      if( flag == 2 or flag == 3 ): fig.savefig('sensorLeftAfterScaled_vs_sensorLeftPredictedAfterScaled_v2_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
-
-      # nem biztos, hogy kell mellé az idő is, de elvileg az még hiányzik
-      _array_target = np.array([_y_left.ravel(), _predicted_left.ravel(), y_delta.ravel(), np.arange(0, y_delta.shape[0], 1)]).T
-
-      # [[_array_target]] [_yleft, _predicted_left, y_delta, time]
-      # color -> time
-      fig = plt.figure(figsize=(7.5, 6))
-      plt.scatter(_array_target[:,0], _array_target[:,1], c=_array_target[:,3]); plt.ylabel('_predicted_left'); plt.xlabel('_true_y_left');
-      plt.title('#i = ' + str(self.x));
-      plt.colorbar(orientation='vertical', label='Time');
-      if( flag == 1 or flag == 3 ): plt.show();
-      if( flag == 2 or flag == 3 ): fig.savefig('sensorLeftAfterScaled_vs_sensorLeftPredictedAfterScaled_v3_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
-
-      # [[_array_target]] [_yleft, _predicted_left, y_delta, time]
-      # color -> time, size = y_delta
-      fig = plt.figure(figsize=(7.5, 6))
-      plt.scatter(_array_target[:,0], _array_target[:,1], c=_array_target[:,3], s=_array_target[:,2]+10); plt.ylabel('_predicted_left'); plt.xlabel('_true_y_left');
-      plt.title('#i = ' + str(self.x));
-      plt.colorbar(orientation='vertical', label='Time');
-      if( flag == 1 or flag == 3 ): plt.show();
-      if( flag == 2 or flag == 3 ): fig.savefig('sensorLeftAfterScaled_vs_sensorLeftPredictedAfterScaled_v4_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
-
-      # [[_array_target]] [_yleft, _predicted_left, y_delta, time]
-      # color -> time, size = y_delta
-      fig = plt.figure(figsize=(6, 7.5))
-      plt.scatter(_array_target[:,0], _array_target[:,1], c=_array_target[:,3], s=_array_target[:,2]+10); plt.ylabel('_predicted_left'); plt.xlabel('_true_y_left');
-      plt.title('#i = ' + str(self.x));
-      plt.colorbar(orientation='horizontal', label='Time');
-      if( flag == 1 or flag == 3 ): plt.show();
-      if( flag == 2 or flag == 3 ): fig.savefig('sensorLeftAfterScaled_vs_sensorLeftPredictedAfterScaled_v5_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
 
 
   def plot_before_after_sensor_estimation_in_one_chart(self, _y_sensor, _predicted_sensor, y_delta, name, flag):
@@ -1414,9 +1347,6 @@ class Car():
             # Még nekem is barátkoznom kell az értelmezésével
             # Ezért erről később írok
 
-            # Az elsőt kikapcsoltam -> ez a plottolás mindet chartot egymás alá tesz ki lesz vezetve van helyette új (lásd követ.)
-            # self.plot_before_after_sensor_estimation(_y_left, _predicted_left, y_delta, plot_before_after_sensor_estimation_flag)
-
             # Lecseréltem ezt
             self.plot_before_after_sensor_estimation_in_one_chart(_y_left, _predicted_left, y_delta, 'left', self.plot_before_after_sensor_estimation_flag)
             # Erre
@@ -1478,18 +1408,20 @@ class Car():
             # Plot
             # (flag 0 = disable, 1 = plot, 2 = save, 3 = both)
             # Lecseréltem ezt
-            self.plot_before_after_sensor_estimation_in_one_chart(_y_center, _predicted_center, y_delta, 'center', self.plot_before_after_sensor_estimation_flag)
-            # Erre
-            # job_for_2A = multiprocessing.Process(target=self.plot_before_after_sensor_estimation_in_one_chart,args=(_y_center, _predicted_center, y_delta, 'center', self.plot_before_after_sensor_estimation_flag))
-            # job_for_2A.start()
+            if( self.sensor_center_enable == True ):
+              self.plot_before_after_sensor_estimation_in_one_chart(_y_center, _predicted_center, y_delta, 'center', self.plot_before_after_sensor_estimation_flag)
+              # Erre
+              # job_for_2A = multiprocessing.Process(target=self.plot_before_after_sensor_estimation_in_one_chart,args=(_y_center, _predicted_center, y_delta, 'center', self.plot_before_after_sensor_estimation_flag))
+              # job_for_2A.start()
             
             # [[before_array[:,2](center), after_array[:,2](center), y_delta{action}, time]]
             _array_target_center = np.array([before_array[:,2].ravel(), after_array[:,2].ravel(), y_delta.ravel(), np.arange(0, after_array.shape[0], 1)]).T
             # Lecseréltem ezt
-            self.plot_before_after_sensor_values(_array_target_center, 'center', self.plot_before_after_sensor_values_flag)
-            # Erre
-            # job_for_2 = multiprocessing.Process(target=self.plot_before_after_sensor_values,args=(_array_target_center, 'center', self.plot_before_after_sensor_values_flag))
-            # job_for_2.start()
+            if( self.sensor_center_enable == True ):
+              self.plot_before_after_sensor_values(_array_target_center, 'center', self.plot_before_after_sensor_values_flag)
+              # Erre
+              # job_for_2 = multiprocessing.Process(target=self.plot_before_after_sensor_values,args=(_array_target_center, 'center', self.plot_before_after_sensor_values_flag))
+              # job_for_2.start()
 
 
   # -------------- right
