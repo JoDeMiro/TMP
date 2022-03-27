@@ -11,6 +11,8 @@ from sklearn.preprocessing import MinMaxScaler
 
 import os
 import pickle
+import threading
+import multiprocessing
 
 from debils import Printer
 from environments import Road
@@ -1439,7 +1441,12 @@ class Car():
             # (flag 0 = disable, 1 = plot, 2 = save, 3 = both)
             # Vizsgáljuk meg, hogy milyen kapcsolat van a [...]
             # bal szenzor skálázás elötti és a bal szenzor skálázás utáni értéke között
-            self.plot_before_after_sensor_values(_array_target_left, 'left', self.plot_before_after_sensor_values_flag)
+            # Lecseréltem ezt
+            # self.plot_before_after_sensor_values(_array_target_left, 'left', self.plot_before_after_sensor_values_flag)
+            # https://stackoverflow.com/questions/19662906/plotting-with-matplotlib-in-threads
+            # Erre
+            job_for_1 = multiprocessing.Process(target=self.plot_before_after_sensor_values,args=(_array_target_left, 'left', self.plot_before_after_sensor_values_flag))
+            job_for_1.start()
             
             self.printer.ba('before_array.shape = ', before_array[:,1].shape)
             self.printer.ba('after_array.shape  = ', after_array[:,1].shape)
@@ -1470,7 +1477,11 @@ class Car():
             self.plot_before_after_sensor_estimation_in_one_chart(_y_center, _predicted_center, y_delta, 'center', self.plot_before_after_sensor_estimation_flag)
             # [[before_array[:,2](center), after_array[:,2](center), y_delta{action}, time]]
             _array_target_center = np.array([before_array[:,2].ravel(), after_array[:,2].ravel(), y_delta.ravel(), np.arange(0, after_array.shape[0], 1)]).T
-            self.plot_before_after_sensor_values(_array_target_center, 'center', self.plot_before_after_sensor_values_flag)
+            # Lecseréltem ezt
+            # self.plot_before_after_sensor_values(_array_target_center, 'center', self.plot_before_after_sensor_values_flag)
+            # Erre
+            job_for_2 = multiprocessing.Process(target=self.plot_before_after_sensor_values,args=(_array_target_center, 'center', self.plot_before_after_sensor_values_flag))
+            job_for_2.start()
 
 
   # -------------- right
@@ -1497,7 +1508,11 @@ class Car():
             self.plot_before_after_sensor_estimation_in_one_chart(_y_right, _predicted_right, y_delta, 'right', self.plot_before_after_sensor_estimation_flag)
             # [[before_array[:,3](right), after_array[:,3](right), y_delta{action}, time]]
             _array_target_right = np.array([before_array[:,3].ravel(), after_array[:,3].ravel(), y_delta.ravel(), np.arange(0, after_array.shape[0], 1)]).T
-            self.plot_before_after_sensor_values(_array_target_right, 'right', self.plot_before_after_sensor_values_flag)
+            # Lecseréltem ezt
+            # self.plot_before_after_sensor_values(_array_target_right, 'right', self.plot_before_after_sensor_values_flag)
+            # Erre
+            job_for_3 = multiprocessing.Process(target=self.plot_before_after_sensor_values,args=(_array_target_right, 'right', self.plot_before_after_sensor_values_flag))
+            job_for_3.start()
 
 
 
