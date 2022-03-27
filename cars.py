@@ -1906,7 +1906,7 @@ def plot_trace(auto, freq, flag):
       if( len(auto.y_history) > 0 ):
 
         fileName = 'y_move'
-        fig = plt.figure(figsize=(10.5, 6))
+        fig = plt.figure(figsize=(24, 5))
         y_move = np.diff(np.array(auto.y_history), 1, -1, prepend=0)
         y_move[0] = 0
         plt.plot(y_move)
