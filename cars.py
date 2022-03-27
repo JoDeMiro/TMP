@@ -662,7 +662,7 @@ class Car():
     plt.figure(figsize=(12, 5)); plt.scatter(_y_test_full, predicted_test_full, c='r');
     plt.ylabel('y_distance_predicted'); plt.xlabel('y_distance_real');
     plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
-        plt.savefig('y_distance_vs_y_distance_predicted_all_{0:04}'.format(self.x)+'.png')
+    plt.savefig('y_distance_vs_y_distance_predicted_all_{0:04}'.format(self.x)+'.png')
     plt.close()
 
 
