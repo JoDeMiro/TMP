@@ -205,11 +205,6 @@ class Road():
         self.wall_left[0:100] = self.wall_left[101]
 
 
-
-
-
-
-
     # Random Walk
 
     # Csak kíváncsiságból, hogy teljesítene egy random walkon (ha mindhárom, a szenzorok és a target is ugya az)
@@ -229,18 +224,6 @@ class Road():
         self.wall_right[0:100] = self.wall_right[101]
         self.wall_center[0:100] = self.wall_center[101]
         self.wall_left[0:100] = self.wall_left[101]
-
-
-
-
-
-
-
-
-
-
-
-
 
     
     if(type == 2):
@@ -318,7 +301,12 @@ class Road():
         self.wall_left[0:100]   = self.wall_left[101]
         self.wall_center[0:100] = self.wall_center[101]
         self.wall_right[0:100]  = self.wall_right[101]
+    
+    
+    # Be kell állítani a min max értékeket, hogy ehhez igazítsa a plot y_lim értékeit
+    self.set_min_max()
 
+    # Description
     self.description()
 
 
@@ -340,8 +328,13 @@ class Road():
 
 
   def show(self, widht = 26, height = 10):
-    _y_max = np.max(self.wall_left)
-    fig, ax = plt.subplots(figsize=(widht, height)); ax.set_ylim(40, _y_max); ax.plot(self.wall_left); ax.plot(self.wall_right); ax.plot(self.wall_center);
+    fig, ax = plt.subplots(figsize=(widht, height));
+    ax.plot(self.wall_left);
+    ax.plot(self.wall_right);
+    ax.plot(self.wall_center);
+    # _y_max = np.max(self.wall_left)
+    # ax.set_ylim(40, _y_max);
+    ax.set_ylim(self.wall_min - 10, self.wall_max + 10)
     return fig, ax
 
   
@@ -351,3 +344,13 @@ class Road():
     print('  \t\t minimum slope (descending) = ', np.min(np.diff(self.wall_center, 1, -1, prepend=self.wall_center[0])))
     print('  \t\t maximum slope (ascending)  =  ', np.max(np.diff(self.wall_center, 1, -1, prepend=self.wall_center[0])))
     print('# ----------------------------------------------------------------------------------------------------')
+
+  def set_min_max(self):
+    _wall_left_max = self.wall_left.max()
+    _wall_left_min = self.wall_left.min()
+    _wall_center_max = self.wall_center.max()
+    _wall_center_min = self.wall_center.min()
+    _wall_right_max = self.wall_right.max()
+    _wall_right_min = self.wall_right.min()
+    self.wall_max = np.array([_wall_left_max, _wall_center_max, _wall_right_max]).max()
+    self.wall_min = np.array([_wall_left_min, _wall_center_min, _wall_right_min]).min()

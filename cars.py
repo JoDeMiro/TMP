@@ -143,36 +143,21 @@ class TestCar():
 
   def plot_history(self, flag, autoscale = True):
     if( flag != 0 ):
-      plot_history(auto = self, flag = 1, autoscale = autoscale)
+      plot_history(auto = self, flag = flag, autoscale = autoscale)
 
       # print(' --------------- plot --------------- ')
 
 
-
   def plot_history_fixed(self, flag, ymin, ymax, width, height):
     if( flag != 0 ):
-      fig, ax = self.road.show(width, height)
-      circle = plt.Circle((self.x, self.y), 5, color='black')
-      ax.add_patch(circle)
-      # v.24 - add standardized color -> left = green, rigth = orange
-      ax.plot(range(int(self.x), int(self.x+self.distance_center_from_wall)), np.repeat(self.y, self.distance_center_from_wall))
-      # ax.plot(range(int(self.x), int(self.x+self.distance_left_from_wall)), range(int(self.y), int(self.y+self.distance_left_from_wall)))
-      # ax.plot(range(int(self.x), int(self.x+self.distance_right_from_wall)), range(int(self.y), int(self.y-self.distance_right_from_wall), -1))
-      ax.vlines(x = self.x, ymin = self.y, ymax = self.road.wall_left[self.x])
-      ax.vlines(x = self.x, ymin = self.y, ymax = self.road.wall_right[self.x])
-      ax.set_ylim([ymin, ymax])
-      if( len(self.y_history) > 0 ):
-        ax.plot(self.y_history)
-        ax.set_title('#i = ' + str(self.x), fontsize=18, fontweight='bold')
-      if( flag == 1 or flag == 3 ): plt.show();
-      if( flag == 2 or flag == 3 ): fig.savefig('history{0:04}'.format(self.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
-
+      plot_history_fixed(self, flag, ymin, ymax, width, height)
+    
       # print(' --------------- plot --------------- ')
 
 
   def plot_history_range(self, flag, start = 0, end = 9999999, autoscale = True):
     if( flag != 0 ):
-      plot_history_range(auto = self, flag = 1, start = start, end = end, autoscale = autoscale)
+      plot_history_range(auto = self, flag = flag, start = start, end = end, autoscale = autoscale)
 
       # print(' --------------- plot --------------- ')
 
@@ -633,14 +618,21 @@ class Car():
 
   def plot_history(self, flag, autoscale = True):
     if( flag != 0 ):
-      plot_history(auto = self, flag = 1, autoscale = autoscale)
+      plot_history(auto = self, flag = flag, autoscale = autoscale)
 
+      # print(' --------------- plot --------------- ')
+
+
+  def plot_history_fixed(self, flag, ymin, ymax, width, height):
+    if( flag != 0 ):
+      plot_history_fixed(self, flag, ymin, ymax, width, height)
+    
       # print(' --------------- plot --------------- ')
 
 
   def plot_history_range(self, flag, start = 0, end = 9999999, autoscale = True):
     if( flag != 0 ):
-      plot_history_range(auto = self, flag = 1, start = start, end = end, autoscale = autoscale)
+      plot_history_range(auto = self, flag = flag, start = start, end = end, autoscale = autoscale)
 
       # print(' --------------- plot --------------- ')
 
@@ -760,12 +752,14 @@ class Car():
       # 2)
       #
       # Elvileg ez a helyes - de a fentit meghagyom hogy lássam a különbséget
-      # ahol a <<y_distance_predicted>> változó előáll ott csinálok rajta gyorsan egy visszatranszformációt és azt is eltárolom egy listában
+      # ahol a <<y_distance_predicted>> változó előáll ott csinálok rajta gyorsan egy visszatranszformációt
+      # és azt is eltárolom egy listában
       # majd pedig azt jelenítem itt meg (sokkal tisztább, nehogy már egy plot fügvényben legyen adat transzformáció)
       #
       # így ugyanis akkor áll elő a visszatranszformáció amikor még ugyan azokat az adatokat kapta meg a <<self.y_minmaxscaler>>
       #
-      # Milyen kapcsolat van a középponttól vett távolság és ugyan ennek a változónak a neurális hálóval becsült értéke között (csak a tanítás után)
+      # Milyen kapcsolat van a középponttól vett távolság és ugyan ennek a változónak a neurális hálóval becsült értéke között
+      # (csak a tanítás után)
       fig = plt.figure(figsize=(12, 5)); plt.scatter(self.y_distance_real, self.y_distance_predicted_inv);
       plt.ylabel('y_distance_predicted_inv (correct)'); plt.xlabel('y_distance_real'); plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
       white_patch = mpatches.Patch(color='white', label='number of observation = ' + str(len(self.y_distance_real))); plt.legend(handles=[white_patch])
@@ -1108,62 +1102,18 @@ class Car():
       if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_LeftRightYDistance_2D_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
 
 
-
   def plot_trace(self, freq, flag):
-
     if( flag != 0 ):
+      plot_trace(auto = self, freq = freq, flag = flag)
 
-      if( self.x % freq == 0 ):
-
-        if( len(self.y_history) > 0 ):
-
-          fileName = 'trace'
-          fig, ax = self.road.show()
-          circle = plt.Circle((self.x, self.y), 5, color='black')
-          ax.add_patch(circle)
-          ax.plot(range(int(self.x), int(self.x+self.distance_center_from_wall)), np.repeat(self.y, self.distance_center_from_wall))
-          # ax.plot(range(int(self.x), int(self.x+self.distance_left_from_wall)), range(int(self.y), int(self.y+self.distance_left_from_wall)), c='green')
-          ax.plot(range(int(self.x), int(self.x+self.distance_left_from_wall)), range(int(self.y), int(self.y+self.distance_left_from_wall)))
-          # ax.plot(range(int(self.x), int(self.x+self.distance_right_from_wall)), range(int(self.y), int(self.y-self.distance_right_from_wall), -1), c='orange')
-          ax.plot(range(int(self.x), int(self.x+self.distance_right_from_wall)), range(int(self.y), int(self.y-self.distance_right_from_wall), -1))
-          y_history_array = np.array(self.y_history)
-          y_history_diff = np.diff(y_history_array, n=1, axis=-1, prepend=0)
-          y_history_diff[0] = 0
-          y_move = np.zeros(self.road.distance.shape[0])
-          y_move[0:y_history_diff.shape[0]] = y_history_diff
-          x = np.arange(self.road.distance.shape[0])
-          ax.plot(self.road.wall_center[0] + y_move * 10)
-          ax.plot(self.y_history)
-          plt.title('#i = ' + str(self.x))
-          # plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
-          if( flag == 1 or flag == 3 ): plt.show();
-          if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_{0:04}'.format(self.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
-
-    if( flag != 0 ):
-
-      if( self.x % freq == 0 ):
-
-        if( len(self.y_history) > 0 ):
-
-          fileName = 'y_move'
-          fig = plt.figure(figsize=(10.5, 6))
-          y_move = np.diff(np.array(self.y_history), 1, -1, prepend=0)
-          y_move[0] = 0
-          plt.plot(y_move)
-          plt.hlines(0, 0, 100)
-          plt.title('#i = ' + str(self.x))
-          # plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
-          if( flag == 1 or flag == 3 ): plt.show();
-          if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_{0:04}'.format(self.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+      # print(' --------------- plot --------------- ')
 
 
 
 
 
 
-
-
-
+# ----------------------------------------------------------------------------------------------------------------------------
 
 
   def run(self, run_length, silent = False):
@@ -1803,19 +1753,20 @@ class Car():
 
 
 
-def plot_history(auto, flag, autoscale = True):
+def plot_history(auto, flag, autoscale = True, fileName = 'history'):
   if( flag != 0 ):
+    fileName = fileName
     fig, ax = auto.road.show()
-    if( autoscale == True ):
-      _wall_left_max   = auto.road.wall_left.max()
-      _wall_left_min   = auto.road.wall_left.min()
-      _wall_right_max  = auto.road.wall_right.max()
-      _wall_right_min  = auto.road.wall_right.min()
-      _wall_center_max = auto.road.wall_center.max()
-      _wall_center_min = auto.road.wall_center.min()
-      _top    = np.array([_wall_left_max, _wall_right_max, _wall_center_max]).max()
-      _bottom = np.array([_wall_left_min, _wall_right_min, _wall_center_min]).min()
-      ax.set_ylim(_bottom - 10, _top + 10)
+    # if( autoscale == True ):
+    #   _wall_left_max   = auto.road.wall_left.max()
+    #   _wall_left_min   = auto.road.wall_left.min()
+    #   _wall_right_max  = auto.road.wall_right.max()
+    #   _wall_right_min  = auto.road.wall_right.min()
+    #   _wall_center_max = auto.road.wall_center.max()
+    #   _wall_center_min = auto.road.wall_center.min()
+    #   _top    = np.array([_wall_left_max, _wall_right_max, _wall_center_max]).max()
+    #   _bottom = np.array([_wall_left_min, _wall_right_min, _wall_center_min]).min()
+    #   ax.set_ylim(_bottom - 10, _top + 10)
     circle = plt.Circle((auto.x, auto.y), 5, color='black')
     ax.add_patch(circle)
     # v.24 - add standardized color -> left = green, rigth = orange
@@ -1826,6 +1777,28 @@ def plot_history(auto, flag, autoscale = True):
     print('self.distance_left_from_wall  = ', auto.distance_left_from_wall)
     ax.vlines(x = auto.x, ymin = auto.y, ymax = auto.road.wall_left[auto.x], color='orange')
     ax.vlines(x = auto.x, ymin = auto.y, ymax = auto.road.wall_right[auto.x], color='blue')
+    if( len(auto.y_history) > 0 ):
+      ax.plot(auto.y_history)
+      ax.set_title('#i = ' + str(auto.x), fontsize=18, fontweight='bold')
+    if( flag == 1 or flag == 3 ): plt.show();
+    if( flag == 2 or flag == 3 ): fig.savefig(fileName + '{0:04}'.format(auto.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+
+
+
+
+def plot_history_fixed(auto, flag, ymin, ymax, width, height):
+  if( flag != 0 ):
+    fig, ax = auto.road.show(width, height)
+    circle = plt.Circle((auto.x, auto.y), 5, color='black')
+    ax.add_patch(circle)
+    # v.24 - add standardized color -> left = green, rigth = orange
+    ax.plot(range(int(auto.x), int(auto.x + auto.distance_center_from_wall)), np.repeat(auto.y, auto.distance_center_from_wall))
+    # ax.plot(range(int(self.x), int(self.x+self.distance_left_from_wall)), range(int(self.y), int(self.y+self.distance_left_from_wall)))
+    # ax.plot(range(int(self.x), int(self.x+self.distance_right_from_wall)), range(int(self.y), int(self.y-self.distance_right_from_wall), -1))
+    ax.vlines(x = auto.x, ymin = auto.y, ymax = auto.road.wall_left[auto.x])
+    ax.vlines(x = auto.x, ymin = auto.y, ymax = auto.road.wall_right[auto.x])
+    ax.set_ylim([ymin, ymax])
     if( len(auto.y_history) > 0 ):
       ax.plot(auto.y_history)
       ax.set_title('#i = ' + str(auto.x), fontsize=18, fontweight='bold')
@@ -1865,3 +1838,56 @@ def plot_history_range(auto, flag, start, end, autoscale = True):
       ax.set_title('#i = ' + str(auto.x), fontsize=18, fontweight='bold')
     if( flag == 1 or flag == 3 ): plt.show();
     if( flag == 2 or flag == 3 ): fig.savefig('history{0:04}'.format(auto.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+
+
+
+# Todo: Ez a függvény két plottot is tartalmaz, a második ráadásul eléggé nem szabványos méretű a többihez képest
+# Todo: Ezt a másoidik plottot szerintem már kivezettem valahol és semmi keresni valója it ezt majd átnézni
+def plot_trace(auto, freq, flag):
+
+  if( flag != 0 ):
+
+    if( auto.x % freq == 0 ):
+
+      if( len(auto.y_history) > 0 ):
+
+        fileName = 'trace'
+        fig, ax = auto.road.show()
+        circle = plt.Circle((auto.x, auto.y), 5, color='black')
+        ax.add_patch(circle)
+        ax.plot(range(int(auto.x), int(auto.x + auto.distance_center_from_wall)), np.repeat(auto.y, auto.distance_center_from_wall))
+        ax.plot(range(int(auto.x), int(auto.x + auto.distance_left_from_wall)), range(int(auto.y), int(auto.y+auto.distance_left_from_wall)))
+        ax.plot(range(int(auto.x), int(auto.x + auto.distance_right_from_wall)), range(int(auto.y), int(auto.y-auto.distance_right_from_wall), -1))
+        y_history_array = np.array(auto.y_history)
+        y_history_diff = np.diff(y_history_array, n=1, axis=-1, prepend=0)
+        y_history_diff[0] = 0
+        y_move = np.zeros(auto.road.distance.shape[0])
+        y_move[0:y_history_diff.shape[0]] = y_history_diff
+        x = np.arange(auto.road.distance.shape[0])
+        ax.plot(auto.road.wall_center[0] + y_move * 10)
+        ax.plot(auto.y_history)
+        plt.title('#i = ' + str(auto.x))
+        if( flag == 1 or flag == 3 ): plt.show();
+        if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_{0:04}'.format(auto.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+  if( flag != 0 ):
+
+    if( auto.x % freq == 0 ):
+
+      if( len(auto.y_history) > 0 ):
+
+        fileName = 'y_move'
+        fig = plt.figure(figsize=(10.5, 6))
+        y_move = np.diff(np.array(auto.y_history), 1, -1, prepend=0)
+        y_move[0] = 0
+        plt.plot(y_move)
+        plt.hlines(0, 0, 100)
+        plt.title('#i = ' + str(auto.x))
+        # plt.title('#i = ' + str(auto.x), fontsize=18, fontweight='bold');
+        if( flag == 1 or flag == 3 ): plt.show();
+        if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_{0:04}'.format(auto.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+
+
+
