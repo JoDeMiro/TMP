@@ -1160,6 +1160,8 @@ class Car():
 # Plot : Minden 32-ik lépésbén kiplottoljuk a Neurális háló álltal előrejelzett és a tényleges adatok közötti kapcsolatot
 # Ezzel a felétellel az a baj, hogy benne van egy másik if-ben ami azt mojda ki, hogyha i % 3 == 1
 # Vagyi nem minden 32-ik lépésben plottolunk
+
+# Lecseréltem ezt plot_frequency
           if( i % self.plot_detailed_frequency == 0 ):
             
             # korábban csak azokat az adatokat plottoltam amik a tanulás után lettek visszamérve, de nézzük meg a teljes adatsoron
