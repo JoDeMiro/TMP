@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class Road():
-  def __init__(self, wide, length, type=1, v=124, shift=0, strech=0, noise=0, b=0):
+  def __init__(self, wide, length, type=1, v=124, shift=0, strech=0, noise=0, b=0, cdr = 0.2):
     self.shift       = shift  # 0
     self.strech      = strech # 0
     self.length      = length # 3000
@@ -199,10 +199,57 @@ class Road():
         self.wall_right = noiser(self.wall_right, noise)
         self.wall_left  = noiser(self.wall_left, noise)
         # Add some drift
-        self.wall_center = drift(self.wall_center, 0.2)
+        # self.wall_center = drift(self.wall_center, 0.2)
+        self.wall_center = drift(self.wall_center, cdr)
         self.wall_right[0:100] = self.wall_right[101]
         self.wall_center[0:100] = self.wall_center[101]
         self.wall_left[0:100] = self.wall_left[101]
+
+
+
+    # 2 Concept drift nem csak egy
+
+    # Egy ideig a ball falhol van közelebb a target -> Aztán átvált és a másik falhoz lesz közelebb
+
+    if(type == 78):
+        def func(x, shift, strech):
+            f = 200 + 30*(np.sin((x + shift)/(180 + strech)))  + 50 * np.sin((x + shift)/(90 + strech))
+            return f
+        self.length      = length # 3000
+        self.distance    = np.arange(0, self.length, 1)
+        self.wall_right  = func(self.distance, 0, 0)                                    # őt nem bántjuk
+        # A wall_left eltolás és nyújtás is van rajta
+        self.wall_left   = func(self.distance, self.shift, self.strech) + self.wide    # a másik falat viszont jól megzavarjuk
+        # egy ideig az egyik falhoz, majd a másikhoz lesz közelebb
+        self.wall_center = ( self.wall_left + self.wall_right ) / 2
+        def drift(x, rate_point):
+            cut_point_first = int(x.size * rate_point)
+            cut_point_second = int(x.size * (1 - rate_point))
+            print(cut_point_first)
+            print(cut_point_second)
+            _tmp = np.zeros(x.size)
+            for i in range(x.size):
+                if( i < cut_point_first ):
+                    _tmp[i] = ( self.wall_left[i] + self.wall_right[i] ) / 2.1
+                elif( i >= cut_point_first and i <= cut_point_second ) :
+                    _tmp[i] = ( self.wall_left[i] + self.wall_right[i] ) / 1.9
+                elif( i > 1 - cut_point_second ):
+                    _tmp[i] = ( self.wall_left[i] + self.wall_right[i] ) / 2.1
+            return _tmp
+        # Add Noise
+        def noiser(x, noise):
+            _tmp = np.random.randn(x.size)*noise
+            return x + _tmp
+        self.wall_right = noiser(self.wall_right, noise)
+        self.wall_left  = noiser(self.wall_left, noise)
+        # Add some drift
+        # self.wall_center = drift(self.wall_center, 0.2)
+        self.wall_center = drift(self.wall_center, cdr)
+        self.wall_right[0:100] = self.wall_right[101]
+        self.wall_center[0:100] = self.wall_center[101]
+        self.wall_left[0:100] = self.wall_left[101]
+
+
 
 
     # Random Walk

@@ -70,6 +70,9 @@ class TestCar():
     self.sensor_right  = []
     self.before  = []
     self.after   = []
+    
+    # error holder
+    self.loss_holder = []
 
     self.mesterseges_coutner = 0
 
@@ -468,7 +471,7 @@ class Car():
                             momentum=0.9,
                             nesterovs_momentum=True,
                             early_stopping=True,
-                            n_iter_no_change=2000)
+                            n_iter_no_change=98765000)
 
     self.x_minmaxscaler = MinMaxScaler(feature_range=(-1,1))       # A range amibe skálázunk (-1, 1)
     self.y_minmaxscaler = MinMaxScaler(feature_range=(-1,1))       # A range amibe skálázunk (-1, 1)
@@ -480,22 +483,25 @@ class Car():
 #    self.regression_right = LinearRegression()
     self.regression_right = LinearRegression(fit_intercept=False)  # Kiiktattam az intercept-et
 
-# data holders
+    # data holders
     self.sensor_center = []
     self.sensor_left   = []
     self.sensor_right  = []
     self.before  = []
     self.after   = []
 
-# new v.25
-# model data holders
+    # new v.25
+    # model data holders
     self.regression_left_coef_history = []
     self.regression_center_coef_history = []
     self.regression_right_coef_history = []
 
+    # error holder
+    self.loss_holder = []
+
     self.mesterseges_coutner = 0
 
-# logger helyett
+    # logger helyett
     self.printer = printer
 
 
@@ -1679,6 +1685,10 @@ class Car():
         self.regression_right_coef_history.append(self.regression_right.coef_)
 
       # new v.25 end
+    
+      # az mlp veszteség értékét (mlp.loss) is tároljuk el későbbi elemzésre minden körben
+      if(hasattr(self.mlp, 'loss_')):
+        self.loss_holder.append(self.mlp.loss_)
 
       # adjuk hozzá az értéket a self.y_history-hoz
       self.y_history.append(self.y)
