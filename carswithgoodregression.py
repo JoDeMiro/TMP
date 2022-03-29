@@ -480,12 +480,17 @@ class Car():
     self.x_minmaxscaler = MinMaxScaler(feature_range=(-1,1))       # A range amibe skálázunk (-1, 1)
     self.y_minmaxscaler = MinMaxScaler(feature_range=(-1,1))       # A range amibe skálázunk (-1, 1)
 
-#    self.regression_left = LinearRegression()
-    self.regression_left = LinearRegression(fit_intercept=False)   # Kiiktattam az intercept-et
-#    self.regression_center = LinearRegression()
-    self.regression_center = LinearRegression(fit_intercept=False) # Kiiktattam az intercept-et
-#    self.regression_right = LinearRegression()
-    self.regression_right = LinearRegression(fit_intercept=False)  # Kiiktattam az intercept-et
+# v.New Regression
+# Első körben viszzsaállítom az intercpetet
+    self.regression_left = LinearRegression(fit_intercept=True)
+#    self.regression_left = LinearRegression(fit_intercept=False)   # Kiiktattam az intercept-et
+    self.regression_center = LinearRegression(fit_intercept=True)
+#    self.regression_center = LinearRegression(fit_intercept=False) # Kiiktattam az intercept-et
+    self.regression_right = LinearRegression(fit_intercept=True)
+#    self.regression_right = LinearRegression(fit_intercept=False)  # Kiiktattam az intercept-et
+
+    print('---------------------------- HELLO --------------------------')
+    print('---------------------- ÚJ AUTO VAGYOK :) -----------------------')
 
     # data holders
     self.sensor_center = []
@@ -1472,7 +1477,26 @@ class Car():
 
 
   # -------------- right
+            print('---------------------------------------')
+            print('before_array.shape = ', before_array.shape)
+            print('------------------>>>------------------')
+            # print(before_array)
+            print('------------------<<<------------------')
+            # before_array.shape (n_obs, 4)
+            # ahol az oszlop a metrika a következő index szerint (3 - right sensor, 2 - center sensor, 1 - left sensor, 0 - self.y)
             _X_right = np.array([before_array[:,3], delta_array[:,0]]).T # right és delta_y (before)
+            print('--------------------------------|||||||')
+            print(' na akkor ehelyett a képlet helyett    ')
+            # Benene van a metrika, hogy éppen most mennyi self.y, mondjuk az is, hogy mennyit akarunk hozzá adni tehát a delta. self.y
+            # m′ = c0 + c1 · 80 · 5/(5 + 2) + c2 · 80 · 2/(5 + 2)
+            # m′ = c0 + c1 · metrika · self.y/(self.y + delta_y) + c2 · metrika · delta_y/(self.y + delta_y)
+            _egy   = np.array([before_array[:,3] * before_array[:,0] / (before_array[:,0] + delta_array[:,0])]
+            # _egy = metrika · self.y/(self.y + delta_y)
+            print('-----------------###-------------------')
+            print(egy)
+            print(egy.shape)
+            print('-----------------###-------------------')
+            _ketto =              # metrika · delta_y/(self.y + delta_y)
             _y_right = after_array[:,3].reshape(-1, 1)                   # right (after)
             regression_right = self.regression_right
             regression_right.fit(_X_right, _y_right)
