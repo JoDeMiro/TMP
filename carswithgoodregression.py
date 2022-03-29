@@ -237,8 +237,6 @@ class TestCar():
 
 
     for i in range(0, run_length, 1):
-      print(bcolors.WARNING + "Warning: No active frommets remain. Continue?" + bcolors.ENDC)
-      self.printer.util('aa')
       self.printer.util('# A run ciklus eleje --------------------------------------------------------------------------------------------------------------------')
       self.printer.util('# i = ', i)
       _summary_mlp_prediction_was_taken = 0
@@ -1098,7 +1096,9 @@ class Car():
 
   def run(self, run_length, silent = False):
     for i in range(0, run_length, 1):
-      self.printer.util('\n# A run ciklus eleje ----------------------------------------------------------------------------------------------------------')
+      #self.printer.util(BColors.WARNING + "Warning: No active frommets remain. Continue?" + BColors.ENDC)
+      self.printer.util(BColors.WARNING + "\n# A run ciklus eleje ----------------------------------------------------------------------------------------------------------" + BColors.ENDC)
+      # self.printer.util('\n# A run ciklus eleje ----------------------------------------------------------------------------------------------------------')
       self.printer.util('# i = ', i)
       _summary_mlp_prediction_was_taken = 0
       _summary_mlp_fit_was_taken = 0
@@ -1132,6 +1132,7 @@ class Car():
         
         if ( i % 3 == 0 and i >= 12 ):
 
+          print('áááááááááááááááááááááááááááááááááááááá')
           self.printer.info('------------------------------ IF i % 3 == 0 ------------------------------')
           self.printer.info('# i = ', i)
           self.printer.util('# i = ', i)
@@ -1487,6 +1488,7 @@ class Car():
                 # job_for_2.start()
 
   # --------------- foooooooooos
+  # --------------- iiiiiiiiiiiiiiiii
   # -------------- right
             print('---------------------------------------')
             print('before_array.shape = ', before_array.shape)
@@ -1762,25 +1764,32 @@ class Car():
 
 # version 20. if( i % 3 == 0 ) -> version 22. if( i % 3 == 1 )
 
-          if( i % 3 == 0 ):                                                       # ugyan ez a feltétel amikor tanítom az út közepének a becslésére
-            self.printer.takeaction('------------------------------ IF i % 3 == 0 ------------------------------')
-            _summary_action_was_taken = 1
-            self.printer.takeaction('=================== TAKE ACTION ===================')
-# ez lett új az ML Auto 10.ipynb-hoz képest
-            self.before.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
-            self.printer.takeaction('-------- ennyivel módosítom self.y értékét --------')
-            self.printer.takeaction('action = ', action)
-            self.printer.takeaction('self.y régi értéke = ', self.y)
-            # new v.27
-            self.y = self.y + action
-            # new v.27 end
-# ez lett új az ML Auto 10.ipynb-hoz képest
-            self.calculate_distances()
-            self.after.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
+          if( i % 3 == 0 ):                      # ugyan ez a feltétel amikor tanítom az út közepének a becslésére
 
-            self.printer.takeaction('self.y új értéke   = ', self.y)
-            self.printer.takeaction('action             = ', action)
-            self.printer.takeaction('----------------- módosítás vége -----------------')
+            # gozer ezt csak akkor lépje meg ha az action nem 0
+            # mivel ilyenkor is beteszi magát a before after listába és ezzel összezavar mindent
+# version 30
+# CheckCheck
+# Itt lehet átállítani, hogy csak akkor tegye be az értékeket a before after listába ha tényleges van action vagy akkor is ha nincsen
+            if( action != 0 ):
+              self.printer.takeaction('------------------------------ IF i % 3 == 0 ------------------------------')
+              _summary_action_was_taken = 1
+              self.printer.takeaction('=================== TAKE ACTION ===================')
+  # ez lett új az ML Auto 10.ipynb-hoz képest
+              self.before.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
+              self.printer.takeaction('-------- ennyivel módosítom self.y értékét --------')
+              self.printer.takeaction('action = ', action)
+              self.printer.takeaction('self.y régi értéke = ', self.y)
+              # new v.27
+              self.y = self.y + action
+              # new v.27 end
+  # ez lett új az ML Auto 10.ipynb-hoz képest
+              self.calculate_distances()
+              self.after.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
+
+              self.printer.takeaction('self.y új értéke   = ', self.y)
+              self.printer.takeaction('action             = ', action)
+              self.printer.takeaction('----------------- módosítás vége -----------------')
 
 
 
