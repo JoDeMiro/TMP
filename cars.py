@@ -10,6 +10,7 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import MinMaxScaler
 
 import os
+import time
 import pickle
 import multiprocessing
 
@@ -73,6 +74,9 @@ class TestCar():
     
     # error holder
     self.loss_holder = []
+    
+    # mlp_fit_evaluation_time_holder
+    self.mlp_fit_evaluation_time_holder = []
 
     self.mesterseges_coutner = 0
 
@@ -499,6 +503,9 @@ class Car():
     # error holder
     self.loss_holder = []
 
+    # mlp_fit_evaluation_time_holder
+    self.mlp_fit_evaluation_time_holder = []
+    
     self.mesterseges_coutner = 0
 
     # logger helyett
@@ -1124,7 +1131,10 @@ class Car():
           self.printer.info('y_scaled.max = ', y_scaled.max())
           self.printer.info('y_scaled.min = ', y_scaled.min())
           self.printer.info('---------------------')
+          mlp_fit_time_start = time.time()
           self.mlp.fit(X_scaled, y_scaled)
+          mlp_fit_time = time.time() - mlp_fit_time_start
+          self.mlp_fit_evaluation_time_holder.append(mlp_fit_time)
 
 # Ha olyanunk van plottoljunk
           self.plotter.plot_mlp(mlp = self.mlp ,flag = self.plotter_mlp_flag)
