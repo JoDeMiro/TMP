@@ -507,11 +507,42 @@ class Plotter():
       if( flag == 1 or flag == 3 ): plt.show();
       if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_{0:04}'.format(x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
 
+  # Legacy - mert sok helyen még ezen a néven használom de átteszem egy másik értelmesebb névre is.
   def test_plot2(self, sensor_left, sensor_right, y_distance, x, flag, lists):
 
     if( flag != 0 ):
 
       if( 6 in lists or 99 in lists ):
+
+        fileName = 'timeline_sensors'
+
+        fig, ax1 = plt.subplots(figsize=(15,5))
+
+        ax1.set_title('#i = ' + str(x), fontsize=18, fontweight='bold');
+
+        ax2 = ax1.twinx()
+
+        ax1.plot(sensor_left, label='left distance')
+        ax1.plot(sensor_right, label='right distance')
+        ax1.plot(y_distance, label='dist. from center')
+
+        err = np.cumsum(np.abs(y_distance))
+        ax2.plot(err, c='black', label='cummulative error')
+
+        ax1.set_xlabel('time')
+        ax1.set_ylabel('sensor values', color='black')
+        ax2.set_ylabel('cummulative error', color='black')
+
+        ax1.legend(frameon=False)
+        ax2.legend(frameon=False)
+
+        if( flag == 1 or flag == 3 ): plt.show()
+        if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_v1_{0:04}'.format(x)+'.png'); plt.close(fig)
+
+  # Ezt régen test_plot2 néven volt elérhető
+  def timeline_sensors1(self, sensor_left, sensor_right, y_distance, x, flag):
+
+    if( flag != 0 ):
 
         fileName = 'timeline_sensors'
 

@@ -1528,9 +1528,15 @@ class Car():
             
 
             # Ez mi ennek utána kéne járni, hogy ez mit csinál ToDo.
-            self.plotter.test_plot(self.sensor_left, self.sensor_right, self.y_distance, self.x, self.plotter_flag, self.plotter_switch)
+            # A test_plot csinálja meg a timeline-t a két szenzorra és a kumulatív hibára
+            # Viszont ezt is ToDo kurva szarul írtam meg, egy függvényben 6-7 plottolás is van ezeket ki kell írni külön függvéynekbe
+            # ez így teljesen használhatatlan
+            if( i % (3 * self.plot_frequency) == 0 ):
+              self.plotter.test_plot(self.sensor_left, self.sensor_right, self.y_distance, self.x, self.plotter_flag, self.plotter_switch)
 
-            self.plotter.test_plot2(self.sensor_left, self.sensor_right, self.y_distance, self.x, self.plotter_flag, self.plotter_switch)
+              # self.plotter.test_plot2(self.sensor_left, self.sensor_right, self.y_distance, self.x, self.plotter_flag, self.plotter_switch)
+              
+              self.plotter.timeline_sensors1(self.sensor_left, self.sensor_right, self.y_distance, self.x, self.plotter_flag)
 
 
 
