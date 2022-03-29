@@ -966,16 +966,12 @@ class Car():
       if( flag == 1 or flag == 3 ): plt.show();
       if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_v3_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
 
+# Itt volt egy függvény a plot_state_space_discover(self, flag) amit szétbontottam négy felé.
 
-  def plot_state_space_discover(self, flag):
+  def plot_state_space_discover_type1(self, flag):
 
     # Az adatok nem a before afterből kellenek nekünk, hanem
-    # self.y_distance
-    # self.sensor_left
-    # self.sensor_center
-    # self.sensor_right
-
-    # time -> create
+    # self.y_distance;    # self.sensor_left;    # self.sensor_center;    # self.sensor_right;    # time -> create
 
     if( flag != 0 ):
 
@@ -993,15 +989,17 @@ class Car():
       if( flag == 1 or flag == 3 ): plt.show();
       if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_LeftRightCenter_3D_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
 
-      fig = plt.figure(figsize=(10,10))
-      ax = fig.add_subplot(projection='3d')
-      ax.scatter(self.sensor_left, self.sensor_right, self.y_distance, c=szin)
-      ax.set_xlabel('sensor left')
-      ax.set_ylabel('sensor right')
-      ax.set_zlabel('y_distance')
-      # ax.invert_xaxis()
-      if( flag == 1 or flag == 3 ): plt.show();
-      if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_LeftRightYDistance_3D_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+  def plot_state_space_discover_type2(self, flag):
+
+    # Az adatok nem a before afterből kellenek nekünk, hanem
+    # self.y_distance;    # self.sensor_left;    # self.sensor_center;    # self.sensor_right;    # time -> create
+
+    if( flag != 0 ):
+
+      fileName = 'state_space_discover'
+
+      szin = np.arange(len(self.sensor_right))
 
       fig = plt.figure(figsize=(10,10))
       ax = fig.add_subplot(projection='3d')
@@ -1012,6 +1010,18 @@ class Car():
       # ax.invert_xaxis()
       if( flag == 1 or flag == 3 ): plt.show();
       if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_LeftRightYDistance_3D_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+
+  def plot_state_space_discover_type3(self, flag):
+
+    # Az adatok nem a before afterből kellenek nekünk, hanem
+    # self.y_distance;    # self.sensor_left;    # self.sensor_center;    # self.sensor_right;    # time -> create
+
+    if( flag != 0 ):
+
+      fileName = 'state_space_discover'
+
+      szin = np.arange(len(self.sensor_right))
 
       fig = plt.figure(figsize=(10,10))
       ax = fig.add_subplot(projection='3d')
@@ -1039,6 +1049,18 @@ class Car():
       if( flag == 1 or flag == 3 ): plt.show();
       if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_LeftRightYDistance_WhitoutBorder_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
 
+
+  def plot_state_space_discover_type4(self, flag):
+
+    # Az adatok nem a before afterből kellenek nekünk, hanem
+    # self.y_distance;    # self.sensor_left;    # self.sensor_center;    # self.sensor_right;    # time -> create
+
+    if( flag != 0 ):
+
+      fileName = 'state_space_discover'
+
+      szin = np.arange(len(self.sensor_right))
+
       fig = plt.figure(figsize=(7.5, 6))
       plt.scatter(self.sensor_left, self.sensor_right, c=self.y_distance)
       plt.ylabel('sensor_right'); plt.xlabel('sensor_left');
@@ -1046,7 +1068,8 @@ class Car():
       plt.title('#i = ' + str(self.x))
       # plt.title('#i = ' + str(self.x), fontsize=18, fontweight='bold');
       if( flag == 1 or flag == 3 ): plt.show();
-      if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_LeftRightYDistance_2D_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+      if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_LeftRightYDistance_2D_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
+
 
 
   def plot_trace(self, freq, flag):
@@ -1493,7 +1516,15 @@ class Car():
             # self.sensor_center
             # self.sensor_right
             
-            self.plot_state_space_discover(self.plot_state_space_discover_flag)
+            # Korábban egybe volt több plotolást is tartalmazott ez a korábbi függvény, amit kivezettem külön fügvényekbe
+            # self.plot_state_space_discover(self.plot_state_space_discover_flag)
+            
+            # self.plot_state_space_discover_type1(self.plot_state_space_discover_flag)    # right, left, center kapcsolat
+            self.plot_state_space_discover_type2(self.plot_state_space_discover_flag)    # right, left, y_distance
+            # self.plot_state_space_discover_type3(self.plot_state_space_discover_flag)    # Fehér, keret nélkül, right, left, y_distance
+            self.plot_state_space_discover_type4(self.plot_state_space_discover_flag)    # 2D, right, left, y_distance
+            
+            
 
             self.plotter.test_plot(self.sensor_left, self.sensor_right, self.y_distance, self.x, self.plotter_flag, self.plotter_switch)
 
