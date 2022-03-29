@@ -21,6 +21,17 @@ from storages import Storage
 
 from IPython.display import clear_output
 
+class BColors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 class TestCar():
   def __init__(self, road, plotter, storage, printer):
     self.plot_frequency = 9
@@ -226,6 +237,8 @@ class TestCar():
 
 
     for i in range(0, run_length, 1):
+      print(bcolors.WARNING + "Warning: No active frommets remain. Continue?" + bcolors.ENDC)
+      self.printer.util('aa')
       self.printer.util('# A run ciklus eleje --------------------------------------------------------------------------------------------------------------------')
       self.printer.util('# i = ', i)
       _summary_mlp_prediction_was_taken = 0
@@ -519,16 +532,16 @@ class Car():
 
   def calculate_distances(self):
     
-#    k = self.x; d = 0
-#    while(k < self.x + self.sight_center):
-#      k += 1; d += 1
-#      self.distance_center_from_wall = d
-#      if(int(self.road.wall_left[k]) < self.y):
-#        self.printer.sr('Sensor center = ', self.distance_center_from_wall)
-#        break
-#      if(int(self.road.wall_right[k]) > self.y):
-#        self.printer.sr('Sensor center = ', self.distance_center_from_wall)
-#        break
+    #    k = self.x; d = 0
+    #    while(k < self.x + self.sight_center):
+    #      k += 1; d += 1
+    #      self.distance_center_from_wall = d
+    #      if(int(self.road.wall_left[k]) < self.y):
+    #        self.printer.sr('Sensor center = ', self.distance_center_from_wall)
+    #        break
+    #      if(int(self.road.wall_right[k]) > self.y):
+    #        self.printer.sr('Sensor center = ', self.distance_center_from_wall)
+    #        break
 
     k = self.x; d = 0
     while(k < self.x + self.sight_center):
@@ -549,30 +562,28 @@ class Car():
     # self.distance_center_from_wall = 0
 
 
-#    k = self.x; d = 0
-#    while(k < self.x + self.sight):
-#      k += 1;  d += 1
-#      self.distance_left_from_wall = d
-#      if(int(self.road.wall_left[k]) < self.y + d):
-#        self.printer.sr('Sensor from left wall = ', self.distance_left_from_wall)
-#        break
+    #    k = self.x; d = 0
+    #    while(k < self.x + self.sight):
+    #      k += 1;  d += 1
+    #      self.distance_left_from_wall = d
+    #      if(int(self.road.wall_left[k]) < self.y + d):
+    #        self.printer.sr('Sensor from left wall = ', self.distance_left_from_wall)
+    #        break
 
-# Ehelyett most az van hogy nézzen simán oldalra
+    # Ehelyett most az van hogy nézzen simán oldalra
     self.distance_left_from_wall = self.y - self.road.wall_left[self.x]
 
 
-#    k = self.x; d = 0
-#    while(k < self.x + self.sight):
-#      k += 1; d += 1
-#      self.distance_right_from_wall = d
-#      if(int(self.road.wall_right[k]) > self.y - d):
-#        self.printer.sr('Sensor from right wall = ', self.distance_right_from_wall)
-#        break
+    #    k = self.x; d = 0
+    #    while(k < self.x + self.sight):
+    #      k += 1; d += 1
+    #      self.distance_right_from_wall = d
+    #      if(int(self.road.wall_right[k]) > self.y - d):
+    #        self.printer.sr('Sensor from right wall = ', self.distance_right_from_wall)
+    #        break
 
-# Ehelyett most az van hogy nézzen simán oldalra
+    # Ehelyett most az van hogy nézzen simán oldalra
     self.distance_right_from_wall = self.road.wall_right[self.x] - self.y
-
-
 
 
     # ki kell kalkulálni a tényleges távolságot a ball és a jobb faltól
@@ -588,22 +599,16 @@ class Car():
     # self.printer.sr('most távolsagra van az alsó faltól = ', self.distance_from_bottom)
 
 
-    self.printer.info('cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc')
-    self.printer.info('self.x                       = ', self.x)
-    self.printer.info('cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc')
+    self.printer.info('c-------------------------------------------------------------------')
+    self.printer.info('self.x                             = ', self.x)
 
     # ezt az értéket fogom becsülni, a középértéktől való eltérés mértéke, ha pozitív akkor fölfelé, ha negatív akkor lefelé tér el
     self.vertical_distance_from_middle = self.y - self.road.wall_center[self.x]
 
-    self.printer.info('KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK')
     self.printer.info('self.vertical_distance_from_middle = ', self.vertical_distance_from_middle)
-    self.printer.info('KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK')
-
-
-
 
     self.printer.info('ezt fogjuk becsülni, ez a középértéktől való eltérés mértéke = ', self.vertical_distance_from_middle)
-
+    self.printer.info('k-------------------------------------------------------------------')
 
     # de elötte szeretnék még valamit leellenőrizni
     # ezeknek a hossza nem fog megeggyezni a tényleges futások számával, hanem több lesz
@@ -1093,7 +1098,7 @@ class Car():
 
   def run(self, run_length, silent = False):
     for i in range(0, run_length, 1):
-      self.printer.util('# A run ciklus eleje --------------------------------------------------------------------------------------------------------------------')
+      self.printer.util('\n# A run ciklus eleje ----------------------------------------------------------------------------------------------------------')
       self.printer.util('# i = ', i)
       _summary_mlp_prediction_was_taken = 0
       _summary_mlp_fit_was_taken = 0
@@ -1115,7 +1120,6 @@ class Car():
         
         # New
         self.plot_trace(self.plot_frequency, self.plot_trace_flag)
-        print(' --------------- plot trace --------------- ')
 
 
 
@@ -1333,6 +1337,10 @@ class Car():
             after_array  = np.array(self.after)
             y_delta = after_array[:,0] - before_array[:,0]
             delta_array = after_array - before_array
+            print(before_array)
+            print('-')
+            print(after_array)
+            # foooooooooooosss
             self.printer.ba('\n----------------------- Before After Dataset Monitoring Block -----------------------')
             self.printer.ba('y_delta = ', y_delta)
             self.printer.ba('before_array.shape = ', before_array.shape)
@@ -1356,10 +1364,13 @@ class Car():
             self.printer.lr('# Linear Regression Learning --------------------------------------------------------------------------------------')
             self.printer.lr('\t\t # Linear Regression Training Results -------------------------------------------------------------------------')
 
+  # -------------- foooooooooooos
   # -------------- left
             #> _X_left tehát a bemenet a left sensor before értéke és az y tengelyen vett elmozdulás mértéke
             #> _X_left = left és delta_y
             _X_left = np.array([before_array[:,1], delta_array[:,0]]).T
+            print('------------- hogy a picsába van az, hogy az elmozdulás mértékekétn hivatkozok rá és az értéke néha 0 -------')
+            print(_X_left)
             #> _y_left a becsült érték pedig a left sesor elmozdulás után mért értéke
             _y_left = after = after_array[:,1].reshape(-1, 1)
 # hhh            regression_left = self.regression_left
@@ -1475,7 +1486,7 @@ class Car():
                 # job_for_2 = multiprocessing.Process(target=self.plot_before_after_sensor_values,args=(_array_target_center, 'center', self.plot_before_after_sensor_values_flag))
                 # job_for_2.start()
 
-
+  # --------------- foooooooooos
   # -------------- right
             print('---------------------------------------')
             print('before_array.shape = ', before_array.shape)
@@ -1490,13 +1501,45 @@ class Car():
             # Benene van a metrika, hogy éppen most mennyi self.y, mondjuk az is, hogy mennyit akarunk hozzá adni tehát a delta. self.y
             # m′ = c0 + c1 · 80 · 5/(5 + 2) + c2 · 80 · 2/(5 + 2)
             # m′ = c0 + c1 · metrika · self.y/(self.y + delta_y) + c2 · metrika · delta_y/(self.y + delta_y)
-            _egy   = np.array([before_array[:,3] * before_array[:,0] / (before_array[:,0] + delta_array[:,0])]
+            _egy   = np.array([before_array[:,3] * before_array[:,0] / (before_array[:,0] + delta_array[:,0])])
             # _egy = metrika · self.y/(self.y + delta_y)
+            # metrika (right) = before_array[:,3]
+            # vm              = before_array[:,0]      esetünkben a vm az a self.y egyébként
+            # delta_vm        = delta_array[:,0]       esetünkben hogy mennyit változott a self.y a lépés után (vagyis hányat léptünk)
             print('-----------------###-------------------')
-            print(egy)
-            print(egy.shape)
+            # print(_egy)
+            # print(_egy.shape)
             print('-----------------###-------------------')
-            _ketto =              # metrika · delta_y/(self.y + delta_y)
+            _ketto   = np.array([before_array[:,3] * delta_array[:,0] / (before_array[:,0] + delta_array[:,0])])
+            # _ketto =  metrika · delta_y/(self.y + delta_y)
+            # metrika (right) = before_array[:,3]
+            # vm              = before_array[:,0]      esetünkben a vm az a self.y egyébként
+            # delta_vm        = delta_array[:,0]       esetünkben hogy mennyit változott a self.y a lépés után (vagyis hányat léptünk)
+            print('-----------------###-------------------')
+            # print(_ketto)
+            # print(_ketto.shape)
+            print('-----------------###-------------------')
+            # A képletet ketté osztotam _egy és _ketto, de nekünk midkettő kell
+            # Ebből a kettőből kell csinálnom egy _X_right változót aminek a dimenzió száma (n_obs, 2)
+            #
+            # Tömbök összefűzése iszonyú szopás
+            # aa = np.array([1,2,3,4,5])
+            # bb = np.array([6,7,8,9,10])
+            # proba1 = np.array([aa, bb])
+            # proba1 = np.vstack((aa,bb))
+            # proba1 = np.hstack((aa,bb))
+            # proba1 = np.dstack((aa,bb))
+            # proba1 = np.stack((aa,bb), axis=1)       # <-- ez a jó megoldás
+            _X_right_proba = np.stack((_egy.flatten(), _ketto.flatten()), axis=1)
+            print('-----------------III-------------------')
+            print('Az új _X_right_proba.shape', _X_right_proba.shape)
+            print('A régi _X_right.shape     ', _X_right.shape)
+            print('-----------------OOO-------------------')
+            # Próba képpen akkor most beadom neki az új számítási módszer szerint kéeszült _X_test_proba változót
+            # Előtte még kíváncsiságból megnézem ez mennyire más mint ami korábban ment be
+            print(_X_right)
+            print(_X_right_proba)
+            print('-----------------xxx-------------------')
             _y_right = after_array[:,3].reshape(-1, 1)                   # right (after)
             regression_right = self.regression_right
             regression_right.fit(_X_right, _y_right)
@@ -1726,6 +1769,7 @@ class Car():
 # ez lett új az ML Auto 10.ipynb-hoz képest
             self.before.append(np.array([self.y, self.distance_left_from_wall, self.distance_center_from_wall, self.distance_right_from_wall]))
             self.printer.takeaction('-------- ennyivel módosítom self.y értékét --------')
+            self.printer.takeaction('action = ', action)
             self.printer.takeaction('self.y régi értéke = ', self.y)
             # new v.27
             self.y = self.y + action
@@ -1782,7 +1826,8 @@ class Car():
         self.printer.util('# A run ciklus vége ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
       # Egy nagyon hasznos kiegészítés ha a programot Jupyter Notebookban futtatom
       if ( i % 10 == 0 ):
-        clear_output(wait=True)
+        # clear_output(wait=True)
+        pass
 
 
 
