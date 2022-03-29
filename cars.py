@@ -1519,13 +1519,15 @@ class Car():
             # Korábban egybe volt több plotolást is tartalmazott ez a korábbi függvény, amit kivezettem külön fügvényekbe
             # self.plot_state_space_discover(self.plot_state_space_discover_flag)
             
-            # self.plot_state_space_discover_type1(self.plot_state_space_discover_flag)    # right, left, center kapcsolat
-            self.plot_state_space_discover_type2(self.plot_state_space_discover_flag)    # right, left, y_distance
-            # self.plot_state_space_discover_type3(self.plot_state_space_discover_flag)    # Fehér, keret nélkül, right, left, y_distance
-            self.plot_state_space_discover_type4(self.plot_state_space_discover_flag)    # 2D, right, left, y_distance
+            if( i % (3 * self.plot_frequency) == 0 ):
+              # self.plot_state_space_discover_type1(self.plot_state_space_discover_flag)    # right, left, center kapcsolat
+              self.plot_state_space_discover_type2(self.plot_state_space_discover_flag)    # right, left, y_distance
+              # self.plot_state_space_discover_type3(self.plot_state_space_discover_flag)    # Fehér keret nélkül, right, left, y_distance
+              self.plot_state_space_discover_type4(self.plot_state_space_discover_flag)    # 2D, right, left, y_distance
             
             
 
+            # Ez mi ennek utána kéne járni, hogy ez mit csinál ToDo.
             self.plotter.test_plot(self.sensor_left, self.sensor_right, self.y_distance, self.x, self.plotter_flag, self.plotter_switch)
 
             self.plotter.test_plot2(self.sensor_left, self.sensor_right, self.y_distance, self.x, self.plotter_flag, self.plotter_switch)
