@@ -978,7 +978,15 @@ class Car():
       if( flag == 1 or flag == 3 ): plt.show();
       if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_v3_{0:04}'.format(self.x)+'.png'); plt.close(fig); plt.close('all'); fig.clf(); plt.close('all');
 
-# Itt volt egy függvény a plot_state_space_discover(self, flag) amit szétbontottam négy felé.
+  # Itt volt egy függvény a plot_state_space_discover(self, flag) amit szétbontottam négy felé.
+  # https://stackoverflow.com/questions/2536307/decorators-in-the-python-standard-lib-deprecated-specifically
+  # @deprecated
+  def plot_state_space_discover(self, flag):
+    '''Csak azért van hogy régi notebookok ne törjenek el'''
+    self.plot_state_space_discover_type1(flag)
+    self.plot_state_space_discover_type2(flag)
+    self.plot_state_space_discover_type3(flag)
+    self.plot_state_space_discover_type4(flag)
 
   def plot_state_space_discover_type1(self, flag):
 
@@ -1540,11 +1548,17 @@ class Car():
             print('-----------------OOO-------------------')
             # Próba képpen akkor most beadom neki az új számítási módszer szerint kéeszült _X_test_proba változót
             # Előtte még kíváncsiságból megnézem ez mennyire más mint ami korábban ment be
+            print('>>>>>>>>>>>>>>>>>>> _X_right >>>>>>>>>>>>>>>')
             print(_X_right)
+            print('<<<<<<<<<<<<<<<<<<< _X_right_proba <<<<<<<<<')
             print(_X_right_proba)
             print('-----------------xxx-------------------')
+            print('--------- NA MOST JÖN AZ UGRÁS ÁTVEZETEM AZ ÚJ LR SZÁMÍTÁST --------')
+            _X_right = _X_right_proba
+# hhh
+
             _y_right = after_array[:,3].reshape(-1, 1)                   # right (after)
-#            regression_right = self.regression_right
+
             self.regression_right.fit(_X_right, _y_right)
             self.printer.ba('\t\t ------------------------------- valyon mennyire jó a right  metrikának a becslése -----------------------------')
             self.printer.ba('\t\t self.regression_right.coef_ = ', self.regression_right.coef_)
@@ -1641,11 +1655,8 @@ class Car():
             self.printer.action('\t\t # Ennyivel mozdulna el egy szenzor adat 1 egység változással ha 1 lenne a before értéke')
             proba_X_metrika   = np.array([1,1]).reshape(1, -1)
             self.printer.action('proba_X_metrika   = ', proba_X_metrika)
-# hhh            predicted_proba_left = regression_left.predict(proba_X_metrika)
             predicted_proba_left = self.regression_left.predict(proba_X_metrika)
-# hhh            predicted_proba_center = regression_center.predict(proba_X_metrika)
             predicted_proba_center = self.regression_center.predict(proba_X_metrika)
-# hhh            predicted_proba_right = regression_right.predict(proba_X_metrika)
             predicted_proba_right = self.regression_right.predict(proba_X_metrika)
 
             self.printer.action('-------- 1 y up ->  left   = ', predicted_proba_left)
@@ -1690,29 +1701,53 @@ class Car():
 
               # a fenti értékek valószínűleg jók, de mindíg minden lépésnél ellenőrizni kell
 
+              # hhh
+              # teljesen át kell írni a predicted kiszámítását ha igazodni akarok ahhoz a másik képlethez amit korábban már átírtam
+              #
+              # Pár sorral feljebb állítom elő az _X_right változót amely alapján a predikció elő fog állni
+              # Nézzük meg hogy néz ki, mert majd át kell írnom, hogy úgy álljon elő ahogy a korábbi képletnél a fit()-nél kiszámoltam
+              print('--------____________--------')
+              print(_X_right)
+              print('________------------________')
+              # helyzet az, hogy a régi _X_right = sesor_before, delta_vm képlet alapján szerepel
+              #       ezzel szemben az új
+              # _egy   = np.array([before_array[:,3] * before_array[:,0] / (before_array[:,0] + delta_array[:,0])])
+              # _ketto   = np.array([before_array[:,3] * delta_array[:,0] / (before_array[:,0] + delta_array[:,0])])
+              # _X_right_proba = np.stack((_egy.flatten(), _ketto.flatten()), axis=1)
+              __right = self.distance_right_from_wall    # before_array[:,3]
+              __y = self.y                               # before_array[:,0]
+              __j = j                                    #  delta_array[:,0]
+              __egy   = np.array([__right * __y / (__y + __j)])
+              __ketto = np.array([__right * __j / (__y + __j)])
+              __X_right_proba = np.stack((__egy.flatten(), __ketto.flatten()), axis=1)
+              print('\n\n\n')
+              print(_X_right.shape)
+              print(__X_right_proba.shape)
+              print(_X_right)
+              print(__X_right_proba)
+              _tmp_old  = self.regression_right.predict(_X_right)
+              _tmp_new  = self.regression_right.predict(__X_right_proba)
+              print('_tmp_old  = ', _tmp_old)
+              print('_tmp_new  = ', _tmp_new)
+              print('\n\n\n')
+
               predicted_left   = self.regression_left.predict(_X_left)
-# hhh              predicted_center = regression_center.predict(_X_center)
               predicted_center = self.regression_center.predict(_X_center)
-# hhh              predicted_right  = regression_right.predict(_X_right)
-              predicted_right  = self.regression_right.predict(_X_right)
+              predicted_right  = self.regression_right.predict(_X_right)         # Old
+              predicted_right  = self.regression_right.predict(__X_right_proba)  # New
+
 
               self.printer.action('\t\t predicted_left   = ', predicted_left)
               self.printer.action('\t\t predicted_center = ', predicted_center)
               self.printer.action('\t\t predicted_right  = ', predicted_right)
 
               self.printer.action('\t\t --------------------- a regression úgy tűnik, hogy jó és pontos ----------------------')
-# hhh              self.printer.action('\t\t regression_left.coef_   = ', regression_left.coef_)
               self.printer.action('\t\t self.regression_left.coef_   = ', self.regression_left.coef_)
-# hhh              self.printer.action('\t\t regression_center.coef_ = ', regression_center.coef_)
               self.printer.action('\t\t self.regression_center.coef_ = ', self.regression_center.coef_)
-# hhh              self.printer.action('\t\t regression_right.coef_  = ', regression_right.coef_)
               self.printer.action('\t\t self.regression_right.coef_  = ', self.regression_right.coef_)
 
-# hhh              self.printer.action('\t\t regression_left.intercept_   = ', regression_left.intercept_)
               self.printer.action('\t\t self.regression_left.intercept_   = ', self.regression_left.intercept_)
-# hhh              self.printer.action('\t\t regression_center.intercept_ = ', regression_center.intercept_)
               self.printer.action('\t\t self.regression_center.intercept_ = ', self.regression_center.intercept_)
-# hhh              self.printer.action('\t\t regression_right.intercept_  = ', regression_right.intercept_)
               self.printer.action('\t\t self.regression_right.intercept_  = ', self.regression_right.intercept_)
 
 
@@ -2004,3 +2039,24 @@ def plot_trace(auto, freq, flag):
         # plt.title('#i = ' + str(auto.x), fontsize=18, fontweight='bold');
         if( flag == 1 or flag == 3 ): plt.show();
         if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_{0:04}'.format(auto.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
+
+
+
+
+
+import warnings
+import functools
+
+def deprecated(func):
+    """This is a decorator which can be used to mark functions
+    as deprecated. It will result in a warning being emitted
+    when the function is used."""
+    @functools.wraps(func)
+    def new_func(*args, **kwargs):
+        warnings.simplefilter('always', DeprecationWarning)  # turn off filter
+        warnings.warn("Call to deprecated function {}.".format(func.__name__),
+                      category=DeprecationWarning,
+                      stacklevel=2)
+        warnings.simplefilter('default', DeprecationWarning)  # reset filter
+        return func(*args, **kwargs)
+    return new_func
