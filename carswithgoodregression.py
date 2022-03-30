@@ -46,6 +46,8 @@ class TestCar():
 
     self.sensor_center_enable = True
 
+    self.action_zero_is_allowed = False
+
     self.x = 0
     self.y = self.road.wall_center[0]
     self.sight = 400           # ennyit lát előre 300, 54, 154
@@ -452,6 +454,8 @@ class Car():
     self.plotter_mlp_flag = 0                           # 0 - disable, 1 - plot, 2 - save, 3 - both
 
     self.sensor_center_enable = True
+
+    self.action_zero_is_allowed = False
 
     self.plotter = plotter
 
@@ -1132,7 +1136,7 @@ class Car():
         
         if ( i % 3 == 0 and i >= 12 ):
 
-          print('áááááááááááááááááááááááááááááááááááááá')
+          self.printer.info('----------------------- A NEURÁLIS HÁLÓ TANÍTÁSA --------------------------')
           self.printer.info('------------------------------ IF i % 3 == 0 ------------------------------')
           self.printer.info('# i = ', i)
           self.printer.util('# i = ', i)
@@ -1145,7 +1149,7 @@ class Car():
           self.printer.debug('y       = ', y)
           
           _summary_mlp_fit_was_taken = 1
-# Lineáris regresszió helyett Neurális hálót használok
+
           self.x_minmaxscaler.fit(X)
           self.y_minmaxscaler.fit(y)
           X_scaled = self.x_minmaxscaler.transform(X)
@@ -1177,6 +1181,7 @@ class Car():
 
         if( i % 3 == 1 and i >= 22 ):
 
+          self.printer.info('---------------- A NEURÁLIS HÁLÓ MINŐSÉGÉNEK VISSZAMÉRÉSE -----------------')
           self.printer.info('------------------------------ IF i % 3 == 1 ------------------------------')
           self.printer.info('# i = ', i)
           self.printer.info('# 2. az 1. pontban megtanult modell alapján teszünk egy becslést - tulajdonképpen ezzel mérem az 1. modell jóságát, ez a lépés ezt szolgálja')
@@ -1251,7 +1256,7 @@ class Car():
         # if( i % 3 == 2 and i <=24 ):
         # if( i % 3 == -1 ): # tehát soha
             
-
+          self.printer.info('-------------------------- MESTERSÉGES MOZGATÁS ---------------------------')
           self.printer.info('------------------------------ IF i % 3 == 2 ------------------------------')
           self.printer.info('# i = ', i)
           self.printer.info('# 3. véletlenszerűen változtatok az autó pozicióján -> ebből állnak elő a before after adatok')
@@ -1322,6 +1327,7 @@ class Car():
 
           if( len(self.before) > 9 ):
 
+            self.printer.info('------------------------------------- ACTION ----------------------------------------')
             self.printer.info('------------------------------ IF len(self.before) > 9 ------------------------------')
             self.printer.info('\n')
             self.printer.info('  Ha már van elég before after adatunk')
@@ -1374,14 +1380,11 @@ class Car():
             print(_X_left)
             #> _y_left a becsült érték pedig a left sesor elmozdulás után mért értéke
             _y_left = after = after_array[:,1].reshape(-1, 1)
-# hhh            regression_left = self.regression_left
             self.regression_left.fit(_X_left, _y_left)
             # print('\t\t _X_left <<sensor before, y elmozdulás mértéke>>   = \n', _X_left)
             # print('\t\t _y_left <<sensor after az érték amit becsülnünk>> = \n', _y_left)
             self.printer.lr('\t\t ------------------------------- valyon mennyire jó a left   metrikának a becslése -----------------------------')
-# hhh            self.printer.lr('\t\t regression_left.coef_ = ', regression_left.coef_)
             self.printer.lr('\t\t self.regression_left.coef_ = ', self.regression_left.coef_)
-# hhh            self.printer.lr('\t\t regression_left.intercept_ = ', regression_left.intercept_)
             self.printer.lr('\t\t self.regression_left.intercept_ = ', self.regression_left.intercept_)
             #> _predicted_left lesz a bemenete a neurális hálónak
             #  nem a mostani formájában mert itt a tényleges le fel skálázási adatok alapján tanítottuk meg a lineáris regressziós modelt
@@ -1393,7 +1396,6 @@ class Car():
             #  az így kapott Y tengelyen mért érték -> Majd pedig ennek alapján választjuk ki azt, amelyikkel a legközelebb tudunk
             #  jutni a kívánt célhoz
 
-# hhh            _predicted_left = regression_left.predict(_X_left)
             _predicted_left = self.regression_left.predict(_X_left)
 
             #> Tehát a fenti <<_predicted_left>> változót csak azért hoztam létre, hogy vizsgálni tudjam, mennyire jól ragadta meg
@@ -1453,12 +1455,11 @@ class Car():
   # -------------- center
             _X_center = np.array([before_array[:,2], delta_array[:,0]]).T # center és delta_y (before)
             _y_center = after_array[:,2].reshape(-1, 1)                   # center (after)
-            regression_center = self.regression_center
-            regression_center.fit(_X_center, _y_center)
+            self.regression_center.fit(_X_center, _y_center)
             self.printer.ba('\t\t ------------------------------- valyon mennyire jó a center metrikának a becslése -----------------------------')
-            self.printer.ba('\t\t regression_center.coef_ = ', regression_center.coef_)
-            self.printer.ba('\t\t regression_center.intercept_', regression_center.intercept_)
-            _predicted_center = regression_center.predict(_X_center)
+            self.printer.ba('\t\t self.regression_center.coef_ = ', self.regression_center.coef_)
+            self.printer.ba('\t\t self.regression_center.intercept_', self.regression_center.intercept_)
+            _predicted_center = self.regression_center.predict(_X_center)
 
             # kiplottolom a before after adatokat egy konkrét szenzor értékeire
 
@@ -1543,12 +1544,12 @@ class Car():
             print(_X_right_proba)
             print('-----------------xxx-------------------')
             _y_right = after_array[:,3].reshape(-1, 1)                   # right (after)
-            regression_right = self.regression_right
-            regression_right.fit(_X_right, _y_right)
+#            regression_right = self.regression_right
+            self.regression_right.fit(_X_right, _y_right)
             self.printer.ba('\t\t ------------------------------- valyon mennyire jó a right  metrikának a becslése -----------------------------')
-            self.printer.ba('\t\t regression_right.coef_ = ', regression_right.coef_)
-            self.printer.ba('\t\t regression_right.intercept_ = ', regression_right.intercept_)
-            _predicted_right = regression_right.predict(_X_right)
+            self.printer.ba('\t\t self.regression_right.coef_ = ', self.regression_right.coef_)
+            self.printer.ba('\t\t self.regression_right.intercept_ = ', self.regression_right.intercept_)
+            _predicted_right = self.regression_right.predict(_X_right)
 
             # kiplottolom a before after adatokat egy konkrét szenzor értékeire
 
@@ -1632,7 +1633,7 @@ class Car():
             # move = np.array([-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
 
-  # most
+
 
 
             self.printer.action('\t # Az egyes lépések várható kimeneteinek kiszámolása ----------------------------------------------')
@@ -1642,8 +1643,11 @@ class Car():
             self.printer.action('proba_X_metrika   = ', proba_X_metrika)
 # hhh            predicted_proba_left = regression_left.predict(proba_X_metrika)
             predicted_proba_left = self.regression_left.predict(proba_X_metrika)
-            predicted_proba_center = regression_center.predict(proba_X_metrika)
-            predicted_proba_right = regression_right.predict(proba_X_metrika)
+# hhh            predicted_proba_center = regression_center.predict(proba_X_metrika)
+            predicted_proba_center = self.regression_center.predict(proba_X_metrika)
+# hhh            predicted_proba_right = regression_right.predict(proba_X_metrika)
+            predicted_proba_right = self.regression_right.predict(proba_X_metrika)
+
             self.printer.action('-------- 1 y up ->  left   = ', predicted_proba_left)
             self.printer.action('-------- 1 y up ->  center = ', predicted_proba_center)
             self.printer.action('-------- 1 y up ->  right  = ', predicted_proba_right)
@@ -1687,8 +1691,10 @@ class Car():
               # a fenti értékek valószínűleg jók, de mindíg minden lépésnél ellenőrizni kell
 
               predicted_left   = self.regression_left.predict(_X_left)
-              predicted_center = regression_center.predict(_X_center)
-              predicted_right  = regression_right.predict(_X_right)
+# hhh              predicted_center = regression_center.predict(_X_center)
+              predicted_center = self.regression_center.predict(_X_center)
+# hhh              predicted_right  = regression_right.predict(_X_right)
+              predicted_right  = self.regression_right.predict(_X_right)
 
               self.printer.action('\t\t predicted_left   = ', predicted_left)
               self.printer.action('\t\t predicted_center = ', predicted_center)
@@ -1697,12 +1703,18 @@ class Car():
               self.printer.action('\t\t --------------------- a regression úgy tűnik, hogy jó és pontos ----------------------')
 # hhh              self.printer.action('\t\t regression_left.coef_   = ', regression_left.coef_)
               self.printer.action('\t\t self.regression_left.coef_   = ', self.regression_left.coef_)
-              self.printer.action('\t\t regression_center.coef_ = ', regression_center.coef_)
-              self.printer.action('\t\t regression_right.coef_  = ', regression_right.coef_)
+# hhh              self.printer.action('\t\t regression_center.coef_ = ', regression_center.coef_)
+              self.printer.action('\t\t self.regression_center.coef_ = ', self.regression_center.coef_)
+# hhh              self.printer.action('\t\t regression_right.coef_  = ', regression_right.coef_)
+              self.printer.action('\t\t self.regression_right.coef_  = ', self.regression_right.coef_)
+
 # hhh              self.printer.action('\t\t regression_left.intercept_   = ', regression_left.intercept_)
               self.printer.action('\t\t self.regression_left.intercept_   = ', self.regression_left.intercept_)
-              self.printer.action('\t\t regression_center.intercept_ = ', regression_center.intercept_)
-              self.printer.action('\t\t regression_right.intercept_  = ', regression_right.intercept_)
+# hhh              self.printer.action('\t\t regression_center.intercept_ = ', regression_center.intercept_)
+              self.printer.action('\t\t self.regression_center.intercept_ = ', self.regression_center.intercept_)
+# hhh              self.printer.action('\t\t regression_right.intercept_  = ', regression_right.intercept_)
+              self.printer.action('\t\t self.regression_right.intercept_  = ', self.regression_right.intercept_)
+
 
               # nekünk majd azt az értéket kell választanunk amelyik segítségével a legközelebb jutunk a 0 értékhez
 
@@ -1771,7 +1783,12 @@ class Car():
 # version 30
 # CheckCheck
 # Itt lehet átállítani, hogy csak akkor tegye be az értékeket a before after listába ha tényleges van action vagy akkor is ha nincsen
-            if( action != 0 ):
+#
+# Kicsit belehackeltem és kivezettem egy atributumba ezt a beállítás (self.action_zero_is_allowed = False gyárilag)
+            predicate = -123456 if self.action_zero_is_allowed == True else 0
+
+            if( action != predicate ):                # new
+            #if( action != 0 ):                       # old
               self.printer.takeaction('------------------------------ IF i % 3 == 0 ------------------------------')
               _summary_action_was_taken = 1
               self.printer.takeaction('=================== TAKE ACTION ===================')
@@ -1987,7 +2004,3 @@ def plot_trace(auto, freq, flag):
         # plt.title('#i = ' + str(auto.x), fontsize=18, fontweight='bold');
         if( flag == 1 or flag == 3 ): plt.show();
         if( flag == 2 or flag == 3 ): fig.savefig(fileName + '_{0:04}'.format(auto.x)+'.png'); plt.close('all'); fig.clf(); ax.cla(); plt.close('all');
-
-
-
-
