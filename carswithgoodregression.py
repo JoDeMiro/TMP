@@ -46,7 +46,9 @@ class TestCar():
 
     self.sensor_center_enable = True
 
-    self.action_zero_is_allowed = False
+    # self.action_zero_is_allowed = False               # erre tuliképp a TestCar osztályban nincs is szükség
+
+    self.linear_regression_calculation = 'old'
 
     self.x = 0
     self.y = self.road.wall_center[0]
@@ -298,13 +300,38 @@ class TestCar():
 
             for j in move:
 
+              # new 'the original article' linreg calculation
+              __right  = self.distance_right_from_wall   # before_array[:,3]
+              __center = self.distance_center_from_wall  # before_array[:,2]
+              __left   = self.distance_left_from_wall    # before_array[:,1]
+              __y = self.y                               # before_array[:,0]
+              __j = j                                    #  delta_array[:,0]
+              __egy_right    = np.array([__right * __y / (__y + __j)])
+              __ketto_right  = np.array([__right * __j / (__y + __j)])
+              __X_right_new  = np.stack((__egy_right.flatten(), __ketto_right.flatten()), axis=1)
+
+              __egy_center   = np.array([__center * __y / (__y + __j)])
+              __ketto_center = np.array([__center * __j / (__y + __j)])
+              __X_center_new = np.stack((__egy_center.flatten(), __ketto_center.flatten()), axis=1)
+
+              __egy_left     = np.array([__left * __y / (__y + __j)])
+              __ketto_left   = np.array([__left * __j / (__y + __j)])
+              __X_left_new   = np.stack((__egy_left.flatten(), __ketto_left.flatten()), axis=1)
+
+              # old 'pistike fele egyszerű' linreg calculation
               _X_left   = np.array([[self.distance_left_from_wall, j]])
               _X_center = np.array([[self.distance_center_from_wall, j]])
               _X_right  = np.array([[self.distance_right_from_wall, j]])
 
-              predicted_left   = self.regression_left.predict(_X_left)
-              predicted_center = self.regression_center.predict(_X_center)
-              predicted_right  = self.regression_right.predict(_X_right)
+              if( self.linear_regression_calculation == 'old' ):
+                predicted_left   = self.regression_left.predict(_X_left)
+                predicted_center = self.regression_center.predict(_X_center)
+                predicted_right  = self.regression_right.predict(_X_right)
+
+              if( self.linear_regression_calculation == 'new' ):
+                predicted_left   = self.regression_left.predict(__X_left_new)
+                predicted_center = self.regression_center.predict(__X_center_new)
+                predicted_right  = self.regression_right.predict(__X_right_new)
 
               # nekünk majd azt az értéket kell választanunk amelyik segítségével a legközelebb jutunk a 0 értékhez
 
@@ -456,6 +483,8 @@ class Car():
     self.sensor_center_enable = True
 
     self.action_zero_is_allowed = False
+
+    self.linear_regression_calculation = 'old'
 
     self.plotter = plotter
 
@@ -1352,18 +1381,26 @@ class Car():
             after_array  = np.array(self.after)
             y_delta = after_array[:,0] - before_array[:,0]
             delta_array = after_array - before_array
-            print(before_array)
-            print('-')
-            print(after_array)
-            # foooooooooooosss
+            self.printer.ba('')
+            self.printer.ba('------------- hogy a picsába van az, hogy az elmozdulás mértékeként hivatkozok rá és az értéke néha 0 -------')
+            self.printer.ba('-------------                     az y_delta változóról van szó                                --------------')
+            self.printer.ba('------------- azóta a self.action_zero_is_allowed = False kapcsolóval ki lehet zárni ezt a mechanizmust -----')
+            self.printer.ba('------------- de ellenőzrés képpen itt hagyom ezt a megjegyzést emlékeztetőnek ------------------------------')
+            
             self.printer.ba('\n----------------------- Before After Dataset Monitoring Block -----------------------')
-            self.printer.ba('y_delta = ', y_delta)
+            self.printer.ba('\ny_delta = \n')
+            self.printer.ba(y_delta)
             self.printer.ba('before_array.shape = ', before_array.shape)
             self.printer.ba('after_array.shape  = ', after_array.shape)
-            self.printer.ba('self.before = \n', self.before)
-            self.printer.ba('self.after  = \n', self.after)
-            self.printer.ba('delta_array = \n', delta_array)
+            self.printer.ba('before_array = \n')
+            self.printer.ba(before_array)
+            self.printer.ba('after_array = \n')
+            self.printer.ba(after_array)
+            self.printer.ba('\ndelta_array = \n')
+            self.printer.ba(delta_array)
             self.printer.ba('-----------------------------------------------------------------------------\n')
+            
+
 
             # képlet szerint sensor_after' = w0 + w1 * sensor_before + w2 * delta_y
   # ToDo a helyes képlet nem ez --------> ki kell javítani
@@ -1382,16 +1419,16 @@ class Car():
   # --------------
   # --------------
   # -------------- left
-            _X_left = np.array([before_array[:,1], delta_array[:,0]]).T # left és delta_y (before)
-            print('------------- hogy a picsába van az, hogy az elmozdulás mértékeként hivatkozok rá és az értéke néha 0 -------')
-            print(_X_left)
-            _egy_left     = np.array([before_array[:,1] * before_array[:,0] / (before_array[:,0] + delta_array[:,0])])
-            _ketto_left   = np.array([before_array[:,1] * delta_array[:,0] / (before_array[:,0] + delta_array[:,0])])
-            _X_left_proba = np.stack((_egy_left.flatten(), _ketto_left.flatten()), axis=1)
-            _X_left = _X_left_proba
-# hhh
-            # nem csak itt kell átírni hanem ahol a lehetséges actionökre is kiszámolja
+  # Ki akarom majd vezetni az egész számítást egy osztályba de addig is hhh
+            if( self.linear_regression_calculation == 'old'):
+              _X_left = np.array([before_array[:,1], delta_array[:,0]]).T # left és delta_y (before)
 
+            if( self.linear_regression_calculation == 'new'):
+              _egy_left     = np.array([before_array[:,1] * before_array[:,0] / (before_array[:,0] + delta_array[:,0])])
+              _ketto_left   = np.array([before_array[:,1] * delta_array[:,0] / (before_array[:,0] + delta_array[:,0])])
+              _X_left_proba = np.stack((_egy_left.flatten(), _ketto_left.flatten()), axis=1)
+              _X_left = _X_left_proba
+              # nem csak itt kell átírni hanem ahol a lehetséges actionökre is kiszámolja
 
             #> _y_left a becsült érték pedig a left sesor elmozdulás után mért értéke
             _y_left = after = after_array[:,1].reshape(-1, 1)
@@ -1433,9 +1470,9 @@ class Car():
               # job_for_1A = multiprocessing.Process(target=self.plot_before_after_sensor_estimation_in_one_chart,args=(_y_left, _predicted_left, y_delta, 'left', self.plot_before_after_sensor_estimation_flag))
               # job_for_1A.start()
 
-            self.printer.ba('_X_left << az a változó csomag ami adott szenzorra a sensor before értékét és az Y tengelyen vett elmozdulás mértékét tartalmazza >> = \n', _X_left)
-            self.printer.ba('_y_left << az a változó vector ami egy elmozdítás után mért szenzor értékét tartalmazza [ilyere változott] az elmozdítás után>> = \n', _y_left)
-            self.printer.ba('_predicted_left << az a változó vector amit az _X_left becsült _y_left értékeire [ez maga a becslést tartalmazó adatsor]>> = \n', _predicted_left)
+            self.printer.ba('_X_left << az a változó csomag ami adott szenzorra a sensor before értékét és az Y tengelyen vett elmozdulás mértéke >>\n', _X_left)
+            self.printer.ba('_y_left << az a változó vector ami egy elmozdítás után mért szenzor értékét hordozza [ilyere változott] az elmozdítás után>>\n', _y_left)
+            self.printer.ba('_predicted_left << az a változó vector amit az _X_left becsült _y_left értékeire [ez maga a becslést tartalmazó adatsor]>>\n', _predicted_left)
             
             # Arra vagyok kiváncsi, hogy melyik az _X_left-ben a változás mértéke
             self.printer.ba('_X_left.shape << ellenőrzés arra, hogy a két adacsomag hossaz megegyezik-e >>         = ', _X_left.shape)
@@ -1469,13 +1506,16 @@ class Car():
   # --------------
   # --------------
   # -------------- center
-            _X_center = np.array([before_array[:,2], delta_array[:,0]]).T # center és delta_y (before)
-            _egy_center   = np.array([before_array[:,2] * before_array[:,0] / (before_array[:,0] + delta_array[:,0])])
-            _ketto_center = np.array([before_array[:,2] * delta_array[:,0] / (before_array[:,0] + delta_array[:,0])])
-            _X_center_proba = np.stack((_egy_center.flatten(), _ketto_center.flatten()), axis=1)
-            _X_center = _X_center_proba
-# hhh
-            # nem csak itt kell átírni hanem ahol a lehetséges actionökre is kiszámolja
+  # Ki akarom majd vezetni az egész számítást egy osztályba de addig is hhh
+            if( self.linear_regression_calculation == 'old'):
+              _X_center = np.array([before_array[:,2], delta_array[:,0]]).T # center és delta_y (before)
+            
+            if( self.linear_regression_calculation == 'new'):
+              _egy_center   = np.array([before_array[:,2] * before_array[:,0] / (before_array[:,0] + delta_array[:,0])])
+              _ketto_center = np.array([before_array[:,2] * delta_array[:,0] / (before_array[:,0] + delta_array[:,0])])
+              _X_center_proba = np.stack((_egy_center.flatten(), _ketto_center.flatten()), axis=1)
+              _X_center = _X_center_proba
+              # nem csak itt kell átírni hanem ahol a lehetséges actionökre is kiszámolja
 
             _y_center = after_array[:,2].reshape(-1, 1)                   # center (after)
             self.regression_center.fit(_X_center, _y_center)
@@ -1514,16 +1554,15 @@ class Car():
   # --------------
   # --------------
   # -------------- right
-            print('---------------------------------------')
-            print('before_array.shape = ', before_array.shape)
-            print('------------------>>>------------------')
+            self.printer.ba('---------------------------------------')
+            self.printer.ba('before_array.shape = ', before_array.shape)
+            self.printer.ba('------------------>>>------------------')
             # print(before_array)
-            print('------------------<<<------------------')
+            self.printer.ba('------------------<<<------------------')
             # before_array.shape (n_obs, 4)
             # ahol az oszlop a metrika a következő index szerint (3 - right sensor, 2 - center sensor, 1 - left sensor, 0 - self.y)
             _X_right = np.array([before_array[:,3], delta_array[:,0]]).T # right és delta_y (before)
-            print('--------------------------------|||||||')
-            print(' na akkor ehelyett a képlet helyett    ')
+            self.printer.ba(' na akkor ehelyett a képlet helyett    ')
             # Benene van a metrika, hogy éppen most mennyi self.y, mondjuk az is, hogy mennyit akarunk hozzá adni tehát a delta. self.y
             # m′ = c0 + c1 · 80 · 5/(5 + 2) + c2 · 80 · 2/(5 + 2)
             # m′ = c0 + c1 · metrika · self.y/(self.y + delta_y) + c2 · metrika · delta_y/(self.y + delta_y)
@@ -1537,7 +1576,7 @@ class Car():
             # metrika (right) = before_array[:,3]
             # vm              = before_array[:,0]      esetünkben a vm az a self.y egyébként
             # delta_vm        = delta_array[:,0]       esetünkben hogy mennyit változott a self.y a lépés után (vagyis hányat léptünk)
-            print('-----------------###-------------------')
+            self.printer.ba('---------------------------------------')
             # A képletet ketté osztotam _egy és _ketto, de nekünk midkettő kell
             # Ebből a kettőből kell csinálnom egy _X_right változót aminek a dimenzió száma (n_obs, 2)
             #
@@ -1546,19 +1585,21 @@ class Car():
             # bb = np.array([6,7,8,9,10])
             # proba1 = np.stack((aa,bb), axis=1)       # <-- ez a jó megoldás
             _X_right_proba = np.stack((_egy.flatten(), _ketto.flatten()), axis=1)
-            print('-----------------III-------------------')
-            print('Az új _X_right_proba.shape', _X_right_proba.shape)
-            print('A régi _X_right.shape     ', _X_right.shape)
-            print('-----------------OOO-------------------')
+            self.printer.ba('-----------------III-------------------')
+            self.printer.ba('Az új _X_right_proba.shape', _X_right_proba.shape)
+            self.printer.ba('A régi _X_right.shape     ', _X_right.shape)
+            self.printer.ba('-----------------OOO-------------------')
             # Próba képpen akkor most beadom neki az új számítási módszer szerint kéeszült _X_test_proba változót
             # Előtte még kíváncsiságból megnézem ez mennyire más mint ami korábban ment be
-            print('>>>>>>>>>>>>>>>>>>> _X_right >>>>>>>>>>>>>>>')
-            print(_X_right)
-            print('<<<<<<<<<<<<<<<<<<< _X_right_proba <<<<<<<<<')
-            print(_X_right_proba)
-            print('--------- NA MOST JÖN AZ UGRÁS ÁTVEZETEM AZ ÚJ LR SZÁMÍTÁST --------')
-            _X_right = _X_right_proba
-# hhh
+            self.printer.ba('>>>>>>>>>>>>>>>>>>> _X_right >>>>>>>>>>>>>>>')
+            self.printer.ba(_X_right)
+            self.printer.ba('<<<<<<<<<<<<<<<<<<< _X_right_proba <<<<<<<<<')
+            self.printer.ba(_X_right_proba)
+            self.printer.ba('--------- NA MOST JÖN AZ UGRÁS ÁTVEZETEM AZ ÚJ LR SZÁMÍTÁST --------')
+            # Ki akarom majd vezetni az egész számítást egy osztályba de addig is hhh
+            if( self.linear_regression_calculation == 'new'):
+              _X_right = _X_right_proba
+
             _y_right = after_array[:,3].reshape(-1, 1)                   # right (after)
 
             self.regression_right.fit(_X_right, _y_right)
@@ -1731,13 +1772,24 @@ class Car():
               __X_left_new   = np.stack((__egy_left.flatten(), __ketto_left.flatten()), axis=1)
 
               # predicted_left   = self.regression_left.predict(_X_left)           # Old
-              predicted_left   = self.regression_left.predict(__X_left_new)      # New
+              # predicted_left   = self.regression_left.predict(__X_left_new)      # New
 
               # predicted_center = self.regression_center.predict(_X_center)       # Old
-              predicted_center = self.regression_center.predict(__X_center_new)  # New
+              # predicted_center = self.regression_center.predict(__X_center_new)  # New
 
               # predicted_right  = self.regression_right.predict(_X_right)         # Old
-              predicted_right  = self.regression_right.predict(__X_right_new)    # New
+              # predicted_right  = self.regression_right.predict(__X_right_new)    # New
+
+              # Ez de ciki itt mindíg az új alapján számolok akkor is ha model a régi alapján lett feltanítva?
+
+              if( self.linear_regression_calculation == 'old' ):
+                predicted_left   = self.regression_left.predict(_X_left)           # Old
+                predicted_center = self.regression_center.predict(_X_center)       # Old
+                predicted_right  = self.regression_right.predict(_X_right)         # Old
+              if (self.linear_regression_calculation == 'new' ):
+                predicted_left   = self.regression_left.predict(__X_left_new)      # New
+                predicted_center = self.regression_center.predict(__X_center_new)  # New
+                predicted_right  = self.regression_right.predict(__X_right_new)    # New
 
 
               self.printer.action('\t\t predicted_left   = ', predicted_left)
@@ -1890,7 +1942,7 @@ class Car():
         self.printer.util('# A run ciklus vége ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
       # Egy nagyon hasznos kiegészítés ha a programot Jupyter Notebookban futtatom
       if ( i % 10 == 0 ):
-        # clear_output(wait=True)
+        clear_output(wait=True)
         pass
 
 
