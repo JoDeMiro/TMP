@@ -1379,13 +1379,20 @@ class Car():
             self.printer.lr('# Linear Regression Learning --------------------------------------------------------------------------------------')
             self.printer.lr('\t\t # Linear Regression Training Results -------------------------------------------------------------------------')
 
-  # -------------- foooooooooooos
+  # --------------
+  # --------------
   # -------------- left
-            #> _X_left tehát a bemenet a left sensor before értéke és az y tengelyen vett elmozdulás mértéke
-            #> _X_left = left és delta_y
-            _X_left = np.array([before_array[:,1], delta_array[:,0]]).T
-            print('------------- hogy a picsába van az, hogy az elmozdulás mértékekétn hivatkozok rá és az értéke néha 0 -------')
+            _X_left = np.array([before_array[:,1], delta_array[:,0]]).T # left és delta_y (before)
+            print('------------- hogy a picsába van az, hogy az elmozdulás mértékeként hivatkozok rá és az értéke néha 0 -------')
             print(_X_left)
+            _egy_left     = np.array([before_array[:,1] * before_array[:,0] / (before_array[:,0] + delta_array[:,0])])
+            _ketto_left   = np.array([before_array[:,1] * delta_array[:,0] / (before_array[:,0] + delta_array[:,0])])
+            _X_left_proba = np.stack((_egy_left.flatten(), _ketto_left.flatten()), axis=1)
+            _X_left = _X_left_proba
+# hhh
+            # nem csak itt kell átírni hanem ahol a lehetséges actionökre is kiszámolja
+
+
             #> _y_left a becsült érték pedig a left sesor elmozdulás után mért értéke
             _y_left = after = after_array[:,1].reshape(-1, 1)
             self.regression_left.fit(_X_left, _y_left)
@@ -1459,9 +1466,17 @@ class Car():
             self.printer.ba('after_array.shape  = ', after_array[:,1].shape)
             self.printer.ba('array_target_left  = \n', _array_target_left)
 
-
+  # --------------
+  # --------------
   # -------------- center
             _X_center = np.array([before_array[:,2], delta_array[:,0]]).T # center és delta_y (before)
+            _egy_center   = np.array([before_array[:,2] * before_array[:,0] / (before_array[:,0] + delta_array[:,0])])
+            _ketto_center = np.array([before_array[:,2] * delta_array[:,0] / (before_array[:,0] + delta_array[:,0])])
+            _X_center_proba = np.stack((_egy_center.flatten(), _ketto_center.flatten()), axis=1)
+            _X_center = _X_center_proba
+# hhh
+            # nem csak itt kell átírni hanem ahol a lehetséges actionökre is kiszámolja
+
             _y_center = after_array[:,2].reshape(-1, 1)                   # center (after)
             self.regression_center.fit(_X_center, _y_center)
             self.printer.ba('\t\t ------------------------------- valyon mennyire jó a center metrikának a becslése -----------------------------')
@@ -1496,8 +1511,8 @@ class Car():
                 # job_for_2 = multiprocessing.Process(target=self.plot_before_after_sensor_values,args=(_array_target_center, 'center', self.plot_before_after_sensor_values_flag))
                 # job_for_2.start()
 
-  # --------------- foooooooooos
-  # --------------- iiiiiiiiiiiiiiiii
+  # --------------
+  # --------------
   # -------------- right
             print('---------------------------------------')
             print('before_array.shape = ', before_array.shape)
@@ -1517,18 +1532,11 @@ class Car():
             # metrika (right) = before_array[:,3]
             # vm              = before_array[:,0]      esetünkben a vm az a self.y egyébként
             # delta_vm        = delta_array[:,0]       esetünkben hogy mennyit változott a self.y a lépés után (vagyis hányat léptünk)
-            print('-----------------###-------------------')
-            # print(_egy)
-            # print(_egy.shape)
-            print('-----------------###-------------------')
             _ketto   = np.array([before_array[:,3] * delta_array[:,0] / (before_array[:,0] + delta_array[:,0])])
             # _ketto =  metrika · delta_y/(self.y + delta_y)
             # metrika (right) = before_array[:,3]
             # vm              = before_array[:,0]      esetünkben a vm az a self.y egyébként
             # delta_vm        = delta_array[:,0]       esetünkben hogy mennyit változott a self.y a lépés után (vagyis hányat léptünk)
-            print('-----------------###-------------------')
-            # print(_ketto)
-            # print(_ketto.shape)
             print('-----------------###-------------------')
             # A képletet ketté osztotam _egy és _ketto, de nekünk midkettő kell
             # Ebből a kettőből kell csinálnom egy _X_right változót aminek a dimenzió száma (n_obs, 2)
@@ -1536,10 +1544,6 @@ class Car():
             # Tömbök összefűzése iszonyú szopás
             # aa = np.array([1,2,3,4,5])
             # bb = np.array([6,7,8,9,10])
-            # proba1 = np.array([aa, bb])
-            # proba1 = np.vstack((aa,bb))
-            # proba1 = np.hstack((aa,bb))
-            # proba1 = np.dstack((aa,bb))
             # proba1 = np.stack((aa,bb), axis=1)       # <-- ez a jó megoldás
             _X_right_proba = np.stack((_egy.flatten(), _ketto.flatten()), axis=1)
             print('-----------------III-------------------')
@@ -1552,11 +1556,9 @@ class Car():
             print(_X_right)
             print('<<<<<<<<<<<<<<<<<<< _X_right_proba <<<<<<<<<')
             print(_X_right_proba)
-            print('-----------------xxx-------------------')
             print('--------- NA MOST JÖN AZ UGRÁS ÁTVEZETEM AZ ÚJ LR SZÁMÍTÁST --------')
             _X_right = _X_right_proba
 # hhh
-
             _y_right = after_array[:,3].reshape(-1, 1)                   # right (after)
 
             self.regression_right.fit(_X_right, _y_right)
@@ -1706,35 +1708,36 @@ class Car():
               #
               # Pár sorral feljebb állítom elő az _X_right változót amely alapján a predikció elő fog állni
               # Nézzük meg hogy néz ki, mert majd át kell írnom, hogy úgy álljon elő ahogy a korábbi képletnél a fit()-nél kiszámoltam
-              print('--------____________--------')
-              print(_X_right)
-              print('________------------________')
               # helyzet az, hogy a régi _X_right = sesor_before, delta_vm képlet alapján szerepel
               #       ezzel szemben az új
               # _egy   = np.array([before_array[:,3] * before_array[:,0] / (before_array[:,0] + delta_array[:,0])])
               # _ketto   = np.array([before_array[:,3] * delta_array[:,0] / (before_array[:,0] + delta_array[:,0])])
               # _X_right_proba = np.stack((_egy.flatten(), _ketto.flatten()), axis=1)
-              __right = self.distance_right_from_wall    # before_array[:,3]
+              __right  = self.distance_right_from_wall   # before_array[:,3]
+              __center = self.distance_center_from_wall  # before_array[:,2]
+              __left   = self.distance_left_from_wall    # before_array[:,1]
               __y = self.y                               # before_array[:,0]
               __j = j                                    #  delta_array[:,0]
-              __egy   = np.array([__right * __y / (__y + __j)])
-              __ketto = np.array([__right * __j / (__y + __j)])
-              __X_right_proba = np.stack((__egy.flatten(), __ketto.flatten()), axis=1)
-              print('\n\n\n')
-              print(_X_right.shape)
-              print(__X_right_proba.shape)
-              print(_X_right)
-              print(__X_right_proba)
-              _tmp_old  = self.regression_right.predict(_X_right)
-              _tmp_new  = self.regression_right.predict(__X_right_proba)
-              print('_tmp_old  = ', _tmp_old)
-              print('_tmp_new  = ', _tmp_new)
-              print('\n\n\n')
+              __egy_right    = np.array([__right * __y / (__y + __j)])
+              __ketto_right  = np.array([__right * __j / (__y + __j)])
+              __X_right_new  = np.stack((__egy_right.flatten(), __ketto_right.flatten()), axis=1)
 
-              predicted_left   = self.regression_left.predict(_X_left)
-              predicted_center = self.regression_center.predict(_X_center)
-              predicted_right  = self.regression_right.predict(_X_right)         # Old
-              predicted_right  = self.regression_right.predict(__X_right_proba)  # New
+              __egy_center   = np.array([__center * __y / (__y + __j)])
+              __ketto_center = np.array([__center * __j / (__y + __j)])
+              __X_center_new = np.stack((__egy_center.flatten(), __ketto_center.flatten()), axis=1)
+
+              __egy_left     = np.array([__left * __y / (__y + __j)])
+              __ketto_left   = np.array([__left * __j / (__y + __j)])
+              __X_left_new   = np.stack((__egy_left.flatten(), __ketto_left.flatten()), axis=1)
+
+              # predicted_left   = self.regression_left.predict(_X_left)           # Old
+              predicted_left   = self.regression_left.predict(__X_left_new)      # New
+
+              # predicted_center = self.regression_center.predict(_X_center)       # Old
+              predicted_center = self.regression_center.predict(__X_center_new)  # New
+
+              # predicted_right  = self.regression_right.predict(_X_right)         # Old
+              predicted_right  = self.regression_right.predict(__X_right_new)    # New
 
 
               self.printer.action('\t\t predicted_left   = ', predicted_left)
