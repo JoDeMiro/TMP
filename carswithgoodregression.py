@@ -484,6 +484,9 @@ class Car():
 
     self.action_zero_is_allowed = False
 
+    self.action_take_when = {'Always': 'True', 'i <= 24': 'i <= 24', 'i % 3 == 2': 'i % 3 == 2'}
+    self.action_take = 'i % 3 == 2'
+
     self.linear_regression_calculation = 'old'
 
     self.plotter = plotter
@@ -1288,10 +1291,16 @@ class Car():
         # mivel mindíg egyet fogunk csak lépni, ezért a dif mindíg egy lesz
         # de ezt számítani kell, mivel a későbbiek folyamán lehet, hogy többet is fog lépni
 
-        if( i % 3 == 2 ):
+        # ToDo. Azt hiszem ezt a beállítást szeretném kivezetni.
+
         # TesztTesztTeszt
+        # if( i % 3 == 2 ):
         # if( i % 3 == 2 and i <=24 ):
         # if( i % 3 == -1 ): # tehát soha
+
+        # hhhhh
+
+        if eval(self.action_take):
             
           self.printer.info('-------------------------- MESTERSÉGES MOZGATÁS ---------------------------')
           self.printer.info('------------------------------ IF i % 3 == 2 ------------------------------')
