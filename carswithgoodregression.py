@@ -537,7 +537,7 @@ class Car():
 #    self.regression_right = LinearRegression(fit_intercept=False)  # Kiiktattam az intercept-et
 
     print('---------------------------- HELLO --------------------------')
-    print('---------------------- ÚJ AUTO VAGYOK :) -----------------------')
+    print('---------------------- ÚJ AUTO VAGYOK :)) -------------------')
 
     # data holders
     self.sensor_center = []
