@@ -1390,6 +1390,9 @@ class Car():
             after_array  = np.array(self.after)
             y_delta = after_array[:,0] - before_array[:,0]
             delta_array = after_array - before_array
+            # későbbi elemzés céljából elteszem
+            self.delta_array = delta_array
+            # hhh
             self.printer.ba('')
             self.printer.ba('------------- hogy a picsába van az, hogy az elmozdulás mértékeként hivatkozok rá és az értéke néha 0 -------')
             self.printer.ba('-------------                     az y_delta változóról van szó                                --------------')
