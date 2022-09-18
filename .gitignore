@@ -1,2 +1,6 @@
-\traces
-\__pycache__
+/saved_models
+/traces
+/__pycache__
+.ipynb_checkpoints
+*.mp4
+MLPPlot.py
