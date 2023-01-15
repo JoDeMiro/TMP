@@ -1,0 +1,43 @@
+div.text_cell.rendered {
+  font-family: "Sorts Mill Goudy", Garamond, Palatino, serif;
+}
+
+.rendered_html p {
+  font-size: 16px;
+  margin-left: 30px;
+  margin-right: 130px;
+}
+
+.rendered_html ul li {
+  font-size: 16px;
+  margin-left: 30px;
+}
+
+.rendered_html ol li {
+  font-size: 16px;
+  margin-left: 30px;
+}
+
+.rendered_html div.embed {
+  margin-right: 130px;
+  margin-left: 30px;
+  text-align: center;
+  font-size: 30px;
+  line-height: 1.1;
+}
+
+figure {
+  border: 0px # 1px cccccc solid;
+  padding: 4px;
+  margin: auto;
+}
+
+figcaption {
+  background-color: white;
+  color: black;
+  font-style: normal; #italic
+  padding: 2px;
+  text-align: center;
+}
+
+
